@@ -1,7 +1,9 @@
 {
   "name": "video-annotation-tool",
-  "private": true,
   "version": "0.0.0",
+  "description": "A web-based video annotation tool built with React, Vite, and Tailwind CSS.",
+  "license": "MIT",
+  "author": "Sopwit",
   "type": "module",
   "scripts": {
     "dev": "vite",

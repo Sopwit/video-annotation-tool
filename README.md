@@ -1,16 +1,71 @@
-# React + Vite
+# Video Annotation Tool
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is a web-based video annotation tool built with React, Vite, and Tailwind CSS. It allows users to play videos and draw annotations directly on the video canvas.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Video playback control (play, pause, seek).
+- Drawing tools for annotating videos.
+- Save/load annotations (future feature).
 
-## React Compiler
+## Installation
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+To get this project up and running on your local machine, follow these steps:
 
-## Expanding the ESLint configuration
+### Prerequisites
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Make sure you have Node.js and npm (Node Package Manager) installed on your system.
+
+-   **Node.js**: [Download & Install Node.js](https://nodejs.org/en/download/)
+-   **npm**: npm is included with Node.js.
+
+### Clone the Repository
+
+First, clone the repository to your local machine using Git:
+
+```bash
+git clone https://github.com/Sopwit/video-annutation-tool.git
+cd video-annotation-tool
+```
+
+### Install Dependencies
+
+Navigate into the project directory and install the required Node.js packages:
+
+```bash
+npm install
+```
+
+## Usage
+
+To start the development server and run the application in your browser:
+
+```bash
+npm run dev
+```
+
+This will typically open the application at `http://localhost:5173` (or another available port).
+
+## Project Structure
+
+-   `src/`: Contains the main application source code.
+    -   `components/`: Reusable React components (e.g., `VideoPlayer.jsx`, `CanvasOverlay.jsx`, `Toolbar.jsx`).
+    -   `hooks/`: Custom React hooks (e.g., `useRecorder.js`).
+    -   `App.jsx`: Main application component.
+    -   `main.jsx`: Entry point for the React application.
+-   `public/`: Static assets.
+
+## Built With
+
+-   [React](https://react.dev/) - A JavaScript library for building user interfaces.
+-   [Vite](https://vitejs.dev/) - A next-generation frontend tooling.
+-   [Tailwind CSS](https://tailwindcss.com/) - A utility-first CSS framework.
+
+## Contributing
+
+(Optional section - if you plan to accept contributions)
+Contributions are welcome! Please feel free to open an issue or submit a pull request.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE.md file for details. (If you have a LICENSE.md file, otherwise remove or adapt)
