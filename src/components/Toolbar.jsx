@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Play, Pause, Square, Pen, Eraser, Video, StopCircle, Trash2, Link as LinkIcon, Palette, X, Maximize2, MousePointer2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Play, Pause, Square, Pen, Eraser, StopCircle, Trash2, Link as LinkIcon, X, Maximize2, MousePointer2, Circle, ArrowRight, Type, Undo, Redo, Download, Sticker, BookmarkPlus, PanelRightOpen, PanelRightClose } from 'lucide-react';
 
 const Toolbar = ({
     videoUrl,
@@ -17,11 +17,47 @@ const Toolbar = ({
     color,
     setColor,
     onClear,
+    onUndo,
+    onRedo,
+    onDownload,
+    activeStamp,
+    setActiveStamp,
+    onAddBookmark,
+    onToggleSidebar,
+    isSidebarOpen,
     isYouTube
 }) => {
     const [showUrlDialog, setShowUrlDialog] = useState(false);
     const [inputValue, setInputValue] = useState(videoUrl);
+    
+    // Popover States
+    const [showColorPicker, setShowColorPicker] = useState(false);
     const [showBrushSize, setShowBrushSize] = useState(false);
+    const [showStampPicker, setShowStampPicker] = useState(false);
+
+    const colorPickerRef = useRef(null);
+    const brushSizeRef = useRef(null);
+    const stampPickerRef = useRef(null);
+
+    // Close popovers when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (colorPickerRef.current && !colorPickerRef.current.contains(event.target)) {
+                setShowColorPicker(false);
+            }
+            if (brushSizeRef.current && !brushSizeRef.current.contains(event.target)) {
+                setShowBrushSize(false);
+            }
+            if (stampPickerRef.current && !stampPickerRef.current.contains(event.target)) {
+                setShowStampPicker(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
     const handleUrlSubmit = () => {
         setVideoUrl(inputValue.trim());
@@ -42,23 +78,25 @@ const Toolbar = ({
         setInputValue(videoUrl);
     };
 
+    const stamps = ['✅', '❌', '❓', '❗', '⭐', '🎯'];
+
     return (
         <>
-            <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-xl border border-white/10 rounded-2xl p-3 flex items-center gap-4 shadow-2xl z-50 transition-all hover:bg-black/70">
+            <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl p-3 flex items-center gap-3 shadow-2xl z-50 transition-all hover:bg-black/90 max-w-[95vw] overflow-x-auto">
 
                 {/* URL Input Button */}
                 <button
                     onClick={handleOpenDialog}
-                    className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 transition-colors cursor-pointer text-white/70 hover:text-white"
-                    title="Video URL Ekle"
+                    className="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 transition-colors cursor-pointer text-white/70 hover:text-white"
+                    title="Add Video URL"
                 >
                     <LinkIcon size={18} />
                 </button>
 
-                <div className="w-px h-8 bg-white/10 mx-1" />
+                <div className="w-px h-8 bg-white/10 mx-1 flex-shrink-0" />
 
                 {/* Playback Controls */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-shrink-0">
                     <button
                         onClick={onPlayPause}
                         disabled={isYouTube}
@@ -66,7 +104,7 @@ const Toolbar = ({
                             ? 'bg-white/5 text-white/30 cursor-not-allowed'
                             : 'bg-white/5 hover:bg-white/10 text-white'
                             }`}
-                        title={isYouTube ? "YouTube videoları iframe kontrolleriyle oynatılır" : (isPlaying ? "Pause" : "Play")}
+                        title={isYouTube ? "YouTube videos are controlled via iframe controls" : (isPlaying ? "Pause" : "Play")}
                     >
                         {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
                     </button>
@@ -77,84 +115,193 @@ const Toolbar = ({
                             ? 'bg-white/5 text-white/30 cursor-not-allowed'
                             : 'bg-white/5 hover:bg-white/10 text-white/70 hover:text-white'
                             }`}
-                        title={isYouTube ? "YouTube videoları iframe kontrolleriyle kontrol edilir" : "Stop"}
+                        title={isYouTube ? "YouTube videos are controlled via iframe controls" : "Stop"}
                     >
                         <Square size={16} fill="currentColor" />
                     </button>
                 </div>
 
-                <div className="w-px h-8 bg-white/10 mx-1" />
+                <div className="w-px h-8 bg-white/10 mx-1 flex-shrink-0" />
+
+                {/* History Controls */}
+                <div className="flex items-center gap-1 flex-shrink-0">
+                    <button onClick={onUndo} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-all" title="Undo">
+                        <Undo size={16} />
+                    </button>
+                    <button onClick={onRedo} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-all" title="Redo">
+                        <Redo size={16} />
+                    </button>
+                </div>
+
+                <div className="w-px h-8 bg-white/10 mx-1 flex-shrink-0" />
 
                 {/* Drawing Tools */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 flex-shrink-0">
                     <button
                         onClick={() => setTool('cursor')}
-                        className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95 ${tool === 'cursor' ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'
-                            }`}
-                        title="Etkileşim (Video Kontrolü)"
+                        className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95 ${tool === 'cursor' ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'}`}
+                        title="Cursor"
                     >
                         <MousePointer2 size={18} />
                     </button>
+
                     <button
                         onClick={() => setTool('pen')}
-                        className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95 ${tool === 'pen' ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'
-                            }`}
-                        title="Kalem"
+                        className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95 ${tool === 'pen' ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'}`}
+                        title="Pen"
                     >
                         <Pen size={18} />
                     </button>
 
-                    {/* Color Picker Popover */}
-                    <div className="group relative">
-                        <button
-                            className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-all"
-                            title="Renk Seç"
+                    {/* Stamp Tool */}
+                    <div className="relative z-50" ref={stampPickerRef}>
+                         <button
+                            onClick={() => {
+                                setShowStampPicker(!showStampPicker);
+                                setShowColorPicker(false);
+                                setShowBrushSize(false);
+                                setTool('stamp');
+                            }}
+                            className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95 ${tool === 'stamp' ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'}`}
+                            title="Stamps"
                         >
-                            <div className="w-4 h-4 rounded-full border border-white/20" style={{ backgroundColor: color }} />
+                            {tool === 'stamp' ? <span className="text-lg leading-none">{activeStamp}</span> : <Sticker size={18} />}
                         </button>
-                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 p-3 bg-black/80 backdrop-blur-md border border-white/10 rounded-xl grid grid-cols-5 gap-2 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all transform translate-y-2 group-hover:translate-y-0">
-                            {['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#ffffff', '#6b7280'].map((c) => (
-                                <button
-                                    key={c}
-                                    onClick={() => setColor(c)}
-                                    className={`w-6 h-6 rounded-full border-2 transition-transform hover:scale-110 ${color === c ? 'border-white' : 'border-transparent'}`}
-                                    style={{ backgroundColor: c }}
-                                    title={c}
-                                />
-                            ))}
-                        </div>
+                        
+                        {showStampPicker && (
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 p-3 bg-black/90 backdrop-blur-md border border-white/10 rounded-xl grid grid-cols-3 gap-2 shadow-xl w-32 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                                {stamps.map((s) => (
+                                    <button
+                                        key={s}
+                                        onClick={(e) => { 
+                                            e.stopPropagation(); 
+                                            setActiveStamp(s); 
+                                            setTool('stamp');
+                                            setShowStampPicker(false);
+                                        }}
+                                        className={`w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-xl transition-all ${activeStamp === s ? 'bg-white/20' : ''}`}
+                                    >
+                                        {s}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    <button
+                        onClick={() => setTool('text')}
+                        className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95 ${tool === 'text' ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'}`}
+                        title="Text Tool"
+                    >
+                        <Type size={18} />
+                    </button>
+
+                    {/* Shapes */}
+                    <button
+                        onClick={() => setTool('rectangle')}
+                        className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95 ${tool === 'rectangle' ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'}`}
+                        title="Rectangle"
+                    >
+                        <Square size={18} />
+                    </button>
+                    <button
+                        onClick={() => setTool('circle')}
+                        className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95 ${tool === 'circle' ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'}`}
+                        title="Circle"
+                    >
+                        <Circle size={18} />
+                    </button>
+                    <button
+                        onClick={() => setTool('arrow')}
+                        className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95 ${tool === 'arrow' ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'}`}
+                        title="Arrow"
+                    >
+                        <ArrowRight size={18} />
+                    </button>
+
+                    {/* Color Picker Popover */}
+                    <div className="relative z-50" ref={colorPickerRef}>
+                        <button
+                            onClick={() => {
+                                setShowColorPicker(!showColorPicker);
+                                setShowBrushSize(false);
+                                setShowStampPicker(false);
+                            }}
+                            className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-all border border-transparent hover:border-white/10"
+                            title="Select Color"
+                        >
+                            <div className="w-4 h-4 rounded-full border border-white/20 shadow-sm" style={{ backgroundColor: color }} />
+                        </button>
+                        
+                        {showColorPicker && (
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 p-3 bg-black/90 backdrop-blur-md border border-white/10 rounded-xl grid grid-cols-5 gap-2 shadow-xl w-48 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                                <div className="col-span-5 text-xs text-white/50 mb-1 text-center font-medium">Color Palette</div>
+                                {['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#ffffff', '#6b7280'].map((c) => (
+                                    <button
+                                        key={c}
+                                        onClick={() => { setColor(c); setShowColorPicker(false); }}
+                                        className={`w-7 h-7 rounded-full border-2 transition-transform hover:scale-110 ${color === c ? 'border-white scale-110 shadow-lg' : 'border-transparent'}`}
+                                        style={{ backgroundColor: c }}
+                                        title={c}
+                                    />
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {/* Brush Size Slider */}
-                    <div className="group relative">
+                    <div className="relative z-50" ref={brushSizeRef}>
                         <button
+                            onClick={() => {
+                                setShowBrushSize(!showBrushSize);
+                                setShowColorPicker(false);
+                                setShowStampPicker(false);
+                            }}
                             className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-all"
-                            title="Kalem Kalınlığı"
+                            title="Brush Size"
                         >
                             <Maximize2 size={16} />
                         </button>
-                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 px-3 py-2 bg-black/80 backdrop-blur-md border border-white/10 rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all transform translate-y-2 group-hover:translate-y-0 flex flex-col gap-2 w-32">
-                            <label className="text-xs text-white/50">Kalınlık: {brushSize}px</label>
-                            <input
-                                type="range"
-                                min="1"
-                                max="20"
-                                value={brushSize}
-                                onChange={(e) => setBrushSize(Number(e.target.value))}
-                                className="w-full h-1 bg-white/20 rounded-lg appearance-none cursor-pointer"
-                                style={{
-                                    backgroundImage: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${(brushSize / 20) * 100}%, transparent ${(brushSize / 20) * 100}%)`
-                                }}
-                            />
-                        </div>
-                    </div>                    <button
+                        
+                        {showBrushSize && (
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 px-4 py-3 bg-black/90 backdrop-blur-md border border-white/10 rounded-xl flex flex-col gap-3 w-40 shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-200">
+                                <div className="flex justify-between items-center">
+                                    <label className="text-xs font-medium text-white/70">Stroke Width</label>
+                                    <span className="text-xs font-mono text-blue-400 bg-blue-500/10 px-1.5 rounded">{brushSize}px</span>
+                                </div>
+                                <input
+                                    type="range"
+                                    min="1"
+                                    max="20"
+                                    value={brushSize}
+                                    onChange={(e) => setBrushSize(Number(e.target.value))}
+                                    className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer focus:outline-none"
+                                    style={{
+                                        backgroundImage: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${(brushSize / 20) * 100}%, rgba(255,255,255,0.1) ${(brushSize / 20) * 100}%)`
+                                    }}
+                                />
+                                <div className="flex justify-center items-center h-6 mt-1">
+                                    <div 
+                                        className="rounded-full bg-white transition-all duration-200"
+                                        style={{ 
+                                            width: brushSize, 
+                                            height: brushSize,
+                                            backgroundColor: color 
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <button
                         onClick={() => setTool('eraser')}
-                        className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95 ${tool === 'eraser' ? 'bg-white/20 text-white' : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'
-                            }`}
+                        className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95 ${tool === 'eraser' ? 'bg-white/20 text-white' : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'}`}
                         title="Eraser"
                     >
                         <Eraser size={18} />
                     </button>
+
                     <button
                         onClick={onClear}
                         className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 hover:bg-red-500/20 text-white/70 hover:text-red-400 transition-all active:scale-95"
@@ -164,10 +311,36 @@ const Toolbar = ({
                     </button>
                 </div>
 
-                <div className="w-px h-8 bg-white/10 mx-1" />
+                <div className="w-px h-8 bg-white/10 mx-1 flex-shrink-0" />
 
-                {/* Recording Controls */}
-                <div>
+                {/* Actions: Record, Download */}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                    <button
+                        onClick={onAddBookmark}
+                        className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 hover:bg-blue-500/20 text-white/70 hover:text-blue-400 transition-all active:scale-95"
+                        title="Add Note at current time"
+                    >
+                        <BookmarkPlus size={18} />
+                    </button>
+
+                    <button
+                        onClick={onToggleSidebar}
+                        className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95 ${isSidebarOpen ? 'bg-white/20 text-white' : 'bg-white/5 text-white/70 hover:text-white'}`}
+                        title="Toggle Notes Sidebar"
+                    >
+                        {isSidebarOpen ? <PanelRightClose size={18} /> : <PanelRightOpen size={18} />}
+                    </button>
+
+                    <div className="w-px h-8 bg-white/10 mx-1" />
+
+                    <button
+                        onClick={onDownload}
+                        className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-all active:scale-95"
+                        title="Download Snapshot (Video + Drawing)"
+                    >
+                        <Download size={18} />
+                    </button>
+
                     {!isRecording ? (
                         <button
                             onClick={onStartRecording}
@@ -196,7 +369,7 @@ const Toolbar = ({
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="text-lg font-semibold text-white flex items-center gap-2">
                                 <LinkIcon size={20} />
-                                Video URL Ekle
+                                Add Video URL
                             </h2>
                             <button
                                 onClick={handleCloseDialog}
@@ -208,7 +381,7 @@ const Toolbar = ({
 
                         <input
                             type="text"
-                            placeholder="Video URL'sini yapıştır..."
+                            placeholder="Paste video URL..."
                             value={inputValue}
                             onChange={handleUrlChange}
                             onKeyPress={(e) => e.key === 'Enter' && handleUrlSubmit()}
@@ -217,9 +390,9 @@ const Toolbar = ({
                         />
 
                         <div className="text-xs text-white/50 mb-4 space-y-1">
-                            <p>✓ MP4, WebM, Ogg formatları desteklenir</p>
-                            <p>✓ CORS-enabled uzak videolar çalışır</p>
-                            <p>• Örnek: https://www.w3schools.com/html/mov_bbb.webm</p>
+                            <p>✓ MP4, WebM, Ogg formats are supported</p>
+                            <p>✓ CORS-enabled remote videos work</p>
+                            <p>• Example: https://www.w3schools.com/html/mov_bbb.webm</p>
                         </div>
 
                         <div className="flex gap-3">
@@ -227,13 +400,13 @@ const Toolbar = ({
                                 onClick={handleCloseDialog}
                                 className="flex-1 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white transition-all border border-white/10"
                             >
-                                İptal
+                                Cancel
                             </button>
                             <button
                                 onClick={handleUrlSubmit}
                                 className="flex-1 px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white font-medium transition-all shadow-lg shadow-blue-500/20"
                             >
-                                Yükle
+                                Load
                             </button>
                         </div>
                     </div>
