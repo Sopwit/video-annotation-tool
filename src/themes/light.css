@@ -1,0 +1,138 @@
+/* Light Theme Variables */
+:root[data-theme="light"] {
+  /* Background colors */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --bg-elevated: #ffffff;
+
+  /* Text colors */
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-tertiary: #64748b;
+  --text-inverse: #ffffff;
+
+  /* Border colors */
+  --border-primary: #e2e8f0;
+  --border-secondary: #cbd5e1;
+  --border-focus: #3b82f6;
+
+  /* Accent colors */
+  --accent-blue: #3b82f6;
+  --accent-purple: #8b5cf6;
+  --accent-red: #ef4444;
+  --accent-green: #22c55e;
+  --accent-yellow: #eab308;
+
+  /* UI elements */
+  --toolbar-bg: rgba(255, 255, 255, 0.95);
+  --sidebar-bg: rgba(248, 250, 252, 0.98);
+  --panel-bg: rgba(255, 255, 255, 0.95);
+  --overlay-bg: rgba(0, 0, 0, 0.5);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+}
+
+/* Light Theme Specific Styles */
+[data-theme="light"] body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .toolbar {
+  background: var(--toolbar-bg);
+  border-color: var(--border-primary);
+  box-shadow: var(--shadow-lg);
+}
+
+[data-theme="light"] .sidebar {
+  background: var(--sidebar-bg);
+  border-color: var(--border-primary);
+}
+
+[data-theme="light"] .panel {
+  background: var(--panel-bg);
+  border-color: var(--border-primary);
+}
+
+[data-theme="light"] button {
+  color: var(--text-secondary);
+}
+
+[data-theme="light"] button:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .input,
+[data-theme="light"] input,
+[data-theme="light"] textarea,
+[data-theme="light"] select {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-primary);
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .input:focus,
+[data-theme="light"] input:focus,
+[data-theme="light"] textarea:focus,
+[data-theme="light"] select:focus {
+  border-color: var(--border-focus);
+  background-color: var(--bg-primary);
+}
+
+/* Timeline in light theme */
+[data-theme="light"] .timeline {
+  background: var(--toolbar-bg);
+  border-top-color: var(--border-primary);
+}
+
+/* Layer manager in light theme */
+[data-theme="light"] .layer-manager {
+  background: var(--sidebar-bg);
+  border-left-color: var(--border-primary);
+}
+
+/* Settings panel in light theme */
+[data-theme="light"] .settings-panel {
+  background: var(--panel-bg);
+}
+
+/* Modal overlay */
+[data-theme="light"] .modal-overlay {
+  background: var(--overlay-bg);
+}
+
+/* Cards */
+[data-theme="light"] .card {
+  background: var(--bg-elevated);
+  border-color: var(--border-primary);
+  box-shadow: var(--shadow-md);
+}
+
+[data-theme="light"] .card:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+/* Scrollbars for light theme */
+[data-theme="light"] ::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: var(--border-secondary);
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+
+/* Accessibility - Higher contrast in light mode */
+[data-theme="light"] .focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+}

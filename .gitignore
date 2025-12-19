@@ -121,3 +121,9 @@ dist
 # Vite
 dist-ssr
 *.local
+
+# Electron
+release
+build/*.icns
+build/*.ico
+build/*.png

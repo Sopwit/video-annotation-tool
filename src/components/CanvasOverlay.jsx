@@ -1,7 +1,8 @@
 import React, { useRef, useEffect, useState, useImperativeHandle, forwardRef } from 'react';
 
-const CanvasOverlay = forwardRef(({ width, height, tool, color, brushSize, clearTrigger, isYouTube, activeStamp, videoUrl }, ref) => {
-    const canvasRef = useRef(null);
+const CanvasOverlay = forwardRef(
+  ({ width, height, tool, color, brushSize, clearTrigger, isYouTube, activeStamp, videoUrl, currentLayer, layers }, ref) => {
+    const canvasRefs = useRef({});
     const [isDrawing, setIsDrawing] = useState(false);
     const [startPos, setStartPos] = useState({ x: 0, y: 0 });
     const [snapshot, setSnapshot] = useState(null);
@@ -10,339 +11,375 @@ const CanvasOverlay = forwardRef(({ width, height, tool, color, brushSize, clear
     const [textInput, setTextInput] = useState({ show: false, x: 0, y: 0, value: '' });
 
     const getYouTubeId = (url) => {
-        if (!url) return null;
-        const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
-        return match ? match[1] : null;
+      if (!url) return null;
+      const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
+      return match ? match[1] : null;
     };
 
     const captureFrame = async (targetWidth, targetHeight) => {
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = targetWidth;
-        tempCanvas.height = targetHeight;
-        const tempCtx = tempCanvas.getContext('2d');
-        const canvas = canvasRef.current;
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = targetWidth;
+      tempCanvas.height = targetHeight;
+      const tempCtx = tempCanvas.getContext('2d');
 
-        // 1. Draw Video Background
-        if (isYouTube) {
-            const id = getYouTubeId(videoUrl);
-            if (id) {
-                try {
-                    // Load thumbnail
-                    const img = new Image();
-                    img.crossOrigin = "anonymous";
-                    img.src = `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
-                    await new Promise((resolve, reject) => {
-                        img.onload = resolve;
-                        img.onerror = reject;
-                    });
-                    
-                    // Draw thumbnail maintaining aspect ratio (cover)
-                    // Basic implementation: stretch to fit for simplicity or draw centered
-                    tempCtx.drawImage(img, 0, 0, targetWidth, targetHeight);
-                } catch (e) {
-                    // Fallback: Black background
-                    tempCtx.fillStyle = '#000';
-                    tempCtx.fillRect(0, 0, targetWidth, targetHeight);
-                    
-                    // Optional: Add text "YouTube Video"
-                    tempCtx.fillStyle = '#333';
-                    tempCtx.font = '20px sans-serif';
-                    tempCtx.textAlign = 'center';
-                    tempCtx.fillText('YouTube Video', targetWidth/2, targetHeight/2);
-                }
-            }
-        } else {
-             const video = document.querySelector('video');
-             if (video) {
-                 try {
-                     tempCtx.drawImage(video, 0, 0, targetWidth, targetHeight);
-                 } catch (e) {
-                     // Fallback if protected
-                     tempCtx.fillStyle = '#000';
-                     tempCtx.fillRect(0, 0, targetWidth, targetHeight);
-                 }
-             }
+      // Draw Video Background
+      if (isYouTube) {
+        const id = getYouTubeId(videoUrl);
+        if (id) {
+          try {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.src = `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
+            await new Promise((resolve, reject) => {
+              img.onload = resolve;
+              img.onerror = reject;
+            });
+            tempCtx.drawImage(img, 0, 0, targetWidth, targetHeight);
+          } catch (e) {
+            tempCtx.fillStyle = '#000';
+            tempCtx.fillRect(0, 0, targetWidth, targetHeight);
+          }
         }
+      } else {
+        const video = document.querySelector('video');
+        if (video) {
+          try {
+            tempCtx.drawImage(video, 0, 0, targetWidth, targetHeight);
+          } catch (e) {
+            tempCtx.fillStyle = '#000';
+            tempCtx.fillRect(0, 0, targetWidth, targetHeight);
+          }
+        }
+      }
 
-        // 2. Draw Annotations
-        if (canvas) {
+      // Draw all visible layers
+      layers
+        .filter((l) => l.visible)
+        .forEach((layer) => {
+          const canvas = canvasRefs.current[layer.id];
+          if (canvas) {
+            tempCtx.globalAlpha = layer.opacity;
             tempCtx.drawImage(canvas, 0, 0, width, height, 0, 0, targetWidth, targetHeight);
-        }
+          }
+        });
 
-        return tempCanvas.toDataURL(targetWidth === width ? 'image/png' : 'image/jpeg', 0.8);
+      tempCtx.globalAlpha = 1;
+      return tempCanvas.toDataURL(targetWidth === width ? 'image/png' : 'image/jpeg', 0.8);
     };
 
     useImperativeHandle(ref, () => ({
-        undo: () => {
-            if (historyStep > 0) {
-                const newStep = historyStep - 1;
-                setHistoryStep(newStep);
-                restoreState(history[newStep]);
-            } else if (historyStep === 0) {
-                setHistoryStep(-1);
-                clearCanvas();
-            }
-        },
-        redo: () => {
-            if (historyStep < history.length - 1) {
-                const newStep = historyStep + 1;
-                setHistoryStep(newStep);
-                restoreState(history[newStep]);
-            }
-        },
-        download: async () => {
-            const dataUrl = await captureFrame(width, height);
-            const link = document.createElement('a');
-            link.download = `annotation-${Date.now()}.png`;
-            link.href = dataUrl;
-            link.click();
-        },
-        getSnapshot: async () => {
-             // Create smaller thumbnail (width: 320px)
-            const aspectRatio = width / height || 1.77;
-            const thumbWidth = 320;
-            const thumbHeight = thumbWidth / aspectRatio;
-            return await captureFrame(thumbWidth, thumbHeight);
+      undo: () => {
+        if (historyStep > 0) {
+          const newStep = historyStep - 1;
+          setHistoryStep(newStep);
+          restoreState(history[newStep]);
+        } else if (historyStep === 0) {
+          setHistoryStep(-1);
+          clearAllLayers();
         }
+      },
+      redo: () => {
+        if (historyStep < history.length - 1) {
+          const newStep = historyStep + 1;
+          setHistoryStep(newStep);
+          restoreState(history[newStep]);
+        }
+      },
+      download: async () => {
+        const dataUrl = await captureFrame(width, height);
+        const link = document.createElement('a');
+        link.download = `annotation-${Date.now()}.png`;
+        link.href = dataUrl;
+        link.click();
+      },
+      getSnapshot: async () => {
+        const aspectRatio = width / height || 1.77;
+        const thumbWidth = 320;
+        const thumbHeight = thumbWidth / aspectRatio;
+        return await captureFrame(thumbWidth, thumbHeight);
+      },
     }));
 
+    // Initialize canvases for all layers
     useEffect(() => {
-        const canvas = canvasRef.current;
-        if (canvas) {
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            
-             if (historyStep >= 0 && history[historyStep]) {
-                 restoreState(history[historyStep]);
-             }
+      layers.forEach((layer) => {
+        if (canvasRefs.current[layer.id]) {
+          const canvas = canvasRefs.current[layer.id];
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
         }
-    }, [width, height]);
+      });
+    }, [width, height, layers]);
 
-    // Force context update when tools change
+    // Update current canvas context when tools change
     useEffect(() => {
-        const canvas = canvasRef.current;
-        if (canvas) {
-            const ctx = canvas.getContext('2d');
-            ctx.strokeStyle = color;
-            ctx.lineWidth = brushSize;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-        }
-    }, [color, brushSize]);
+      const canvas = canvasRefs.current[currentLayer];
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        ctx.strokeStyle = color;
+        ctx.lineWidth = brushSize;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+      }
+    }, [color, brushSize, currentLayer]);
 
     useEffect(() => {
-        clearCanvas();
-        setHistory([]);
-        setHistoryStep(-1);
+      clearAllLayers();
+      setHistory([]);
+      setHistoryStep(-1);
     }, [clearTrigger]);
 
-    const clearCanvas = () => {
-        const canvas = canvasRef.current;
+    const clearAllLayers = () => {
+      layers.forEach((layer) => {
+        const canvas = canvasRefs.current[layer.id];
         if (canvas) {
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+          const ctx = canvas.getContext('2d');
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
+      });
     };
 
-    const restoreState = (imageData) => {
-        const canvas = canvasRef.current;
+    const getCurrentCanvas = () => canvasRefs.current[currentLayer];
+
+    const restoreState = (layersData) => {
+      if (!layersData) return;
+      Object.entries(layersData).forEach(([layerId, imageData]) => {
+        const canvas = canvasRefs.current[parseInt(layerId)];
         if (canvas && imageData) {
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.putImageData(imageData, 0, 0);
+          const ctx = canvas.getContext('2d');
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.putImageData(imageData, 0, 0);
         }
+      });
     };
 
     const saveState = () => {
-        const canvas = canvasRef.current;
+      const layersData = {};
+      layers.forEach((layer) => {
+        const canvas = canvasRefs.current[layer.id];
         if (canvas) {
-            const ctx = canvas.getContext('2d');
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            
-            const newHistory = history.slice(0, historyStep + 1);
-            newHistory.push(imageData);
-            setHistory(newHistory);
-            setHistoryStep(newHistory.length - 1);
+          const ctx = canvas.getContext('2d');
+          layersData[layer.id] = ctx.getImageData(0, 0, canvas.width, canvas.height);
         }
+      });
+
+      const newHistory = history.slice(0, historyStep + 1);
+      newHistory.push(layersData);
+      setHistory(newHistory);
+      setHistoryStep(newHistory.length - 1);
     };
 
     const getPos = (e) => {
-        const canvas = canvasRef.current;
-        const rect = canvas.getBoundingClientRect();
-        return {
-            x: e.clientX - rect.left,
-            y: e.clientY - rect.top
-        };
+      const canvas = getCurrentCanvas();
+      if (!canvas) return { x: 0, y: 0 };
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      };
     };
 
     const startDrawing = (e) => {
-        if (tool === 'cursor' || tool === 'text') return;
-        
-        const pos = getPos(e);
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
+      if (tool === 'cursor' || tool === 'text') return;
 
-        // Ensure context is fresh
-        ctx.strokeStyle = color;
-        ctx.lineWidth = brushSize;
-        
-        // Handle Stamp Tool Immediately
-        if (tool === 'stamp') {
-            ctx.font = `${brushSize * 10 + 20}px serif`;
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillStyle = color; // Although stamps are emojis, fillStyle might affect some renderers or fallback text
-            ctx.fillText(activeStamp, pos.x, pos.y);
-            saveState();
-            return;
-        }
+      // Check if current layer is locked
+      const layer = layers.find((l) => l.id === currentLayer);
+      if (layer && layer.locked) return;
 
-        setStartPos(pos);
-        setIsDrawing(true);
+      const pos = getPos(e);
+      const canvas = getCurrentCanvas();
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
 
-        // Save current canvas state to restore during shape preview
-        setSnapshot(ctx.getImageData(0, 0, canvas.width, canvas.height));
+      ctx.strokeStyle = color;
+      ctx.lineWidth = brushSize;
 
-        if (tool === 'pen' || tool === 'eraser') {
-            ctx.beginPath();
-            ctx.moveTo(pos.x, pos.y);
-        }
+      // Handle Stamp Tool
+      if (tool === 'stamp') {
+        ctx.font = `${brushSize * 10 + 20}px serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = color;
+        ctx.fillText(activeStamp, pos.x, pos.y);
+        saveState();
+        return;
+      }
+
+      setStartPos(pos);
+      setIsDrawing(true);
+      setSnapshot(ctx.getImageData(0, 0, canvas.width, canvas.height));
+
+      if (tool === 'pen' || tool === 'eraser') {
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+      }
     };
 
     const draw = (e) => {
-        if (!isDrawing) return;
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
-        const currentPos = getPos(e);
+      if (!isDrawing) return;
+      const canvas = getCurrentCanvas();
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const currentPos = getPos(e);
 
-        // Ensure context props are used (fix for color/size bug)
-        ctx.strokeStyle = color;
-        ctx.lineWidth = brushSize;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = brushSize;
 
-        if (tool === 'pen' || tool === 'eraser') {
-            ctx.lineTo(currentPos.x, currentPos.y);
-            if (tool === 'pen') {
-                ctx.globalCompositeOperation = 'source-over';
-            } else if (tool === 'eraser') {
-                ctx.globalCompositeOperation = 'destination-out';
-                ctx.lineWidth = brushSize * 10;
-            }
-            ctx.stroke();
-        } else {
-            // Shape tools: Restore original state first
-            if (snapshot) {
-                ctx.putImageData(snapshot, 0, 0);
-            }
-            
-            ctx.globalCompositeOperation = 'source-over';
-            ctx.beginPath();
-
-            const w = currentPos.x - startPos.x;
-            const h = currentPos.y - startPos.y;
-
-            if (tool === 'rectangle') {
-                ctx.strokeRect(startPos.x, startPos.y, w, h);
-            } else if (tool === 'circle') {
-                ctx.beginPath();
-                const radius = Math.sqrt(w * w + h * h);
-                ctx.arc(startPos.x, startPos.y, radius, 0, 2 * Math.PI);
-                ctx.stroke();
-            } else if (tool === 'arrow') {
-                // Draw line
-                ctx.moveTo(startPos.x, startPos.y);
-                ctx.lineTo(currentPos.x, currentPos.y);
-                ctx.stroke();
-
-                // Draw arrowhead
-                const angle = Math.atan2(h, w);
-                const headLen = brushSize * 5; // length of head in pixels
-                ctx.beginPath();
-                ctx.moveTo(currentPos.x, currentPos.y);
-                ctx.lineTo(currentPos.x - headLen * Math.cos(angle - Math.PI / 6), currentPos.y - headLen * Math.sin(angle - Math.PI / 6));
-                ctx.moveTo(currentPos.x, currentPos.y);
-                ctx.lineTo(currentPos.x - headLen * Math.cos(angle + Math.PI / 6), currentPos.y - headLen * Math.sin(angle + Math.PI / 6));
-                ctx.stroke();
-            }
+      if (tool === 'pen' || tool === 'eraser') {
+        ctx.lineTo(currentPos.x, currentPos.y);
+        if (tool === 'pen') {
+          ctx.globalCompositeOperation = 'source-over';
+        } else if (tool === 'eraser') {
+          ctx.globalCompositeOperation = 'destination-out';
+          ctx.lineWidth = brushSize * 10;
         }
+        ctx.stroke();
+      } else {
+        // Shape tools
+        if (snapshot) {
+          ctx.putImageData(snapshot, 0, 0);
+        }
+
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.beginPath();
+
+        const w = currentPos.x - startPos.x;
+        const h = currentPos.y - startPos.y;
+
+        if (tool === 'rectangle') {
+          ctx.strokeRect(startPos.x, startPos.y, w, h);
+        } else if (tool === 'circle') {
+          const radius = Math.sqrt(w * w + h * h);
+          ctx.arc(startPos.x, startPos.y, radius, 0, 2 * Math.PI);
+          ctx.stroke();
+        } else if (tool === 'arrow') {
+          ctx.moveTo(startPos.x, startPos.y);
+          ctx.lineTo(currentPos.x, currentPos.y);
+          ctx.stroke();
+
+          const angle = Math.atan2(h, w);
+          const headLen = brushSize * 5;
+          ctx.beginPath();
+          ctx.moveTo(currentPos.x, currentPos.y);
+          ctx.lineTo(
+            currentPos.x - headLen * Math.cos(angle - Math.PI / 6),
+            currentPos.y - headLen * Math.sin(angle - Math.PI / 6)
+          );
+          ctx.moveTo(currentPos.x, currentPos.y);
+          ctx.lineTo(
+            currentPos.x - headLen * Math.cos(angle + Math.PI / 6),
+            currentPos.y - headLen * Math.sin(angle + Math.PI / 6)
+          );
+          ctx.stroke();
+        } else if (tool === 'line') {
+          // NEW: Line tool
+          ctx.moveTo(startPos.x, startPos.y);
+          ctx.lineTo(currentPos.x, currentPos.y);
+          ctx.stroke();
+        }
+      }
     };
 
     const stopDrawing = () => {
-        if (isDrawing) {
-            setIsDrawing(false);
-            saveState();
-        }
+      if (isDrawing) {
+        setIsDrawing(false);
+        saveState();
+      }
     };
 
     const handleCanvasClick = (e) => {
-        if (tool === 'text') {
-            const pos = getPos(e);
-            setTextInput({ show: true, x: pos.x, y: pos.y, value: '' });
-        }
+      if (tool === 'text') {
+        const layer = layers.find((l) => l.id === currentLayer);
+        if (layer && layer.locked) return;
+
+        const pos = getPos(e);
+        setTextInput({ show: true, x: pos.x, y: pos.y, value: '' });
+      }
     };
 
     const handleTextSubmit = () => {
-        if (textInput.value.trim()) {
-            const canvas = canvasRef.current;
-            const ctx = canvas.getContext('2d');
-            ctx.font = `${brushSize * 5 + 10}px sans-serif`;
-            ctx.fillStyle = color;
-            ctx.fillText(textInput.value, textInput.x, textInput.y + (brushSize * 5 + 10)); // Adjust Y to draw roughly where clicked
-            saveState();
+      if (textInput.value.trim()) {
+        const canvas = getCurrentCanvas();
+        if (canvas) {
+          const ctx = canvas.getContext('2d');
+          ctx.font = `${brushSize * 5 + 10}px sans-serif`;
+          ctx.fillStyle = color;
+          ctx.fillText(textInput.value, textInput.x, textInput.y + (brushSize * 5 + 10));
+          saveState();
         }
-        setTextInput({ ...textInput, show: false });
+      }
+      setTextInput({ ...textInput, show: false });
     };
 
     return (
-        <>
-            <canvas
-                ref={canvasRef}
-                className={`absolute top-0 left-0 transition-opacity ${tool === 'cursor' ? 'pointer-events-none' : 'pointer-events-auto'}`}
-                style={{
-                    width,
-                    height,
-                    zIndex: 20,
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    cursor: tool === 'text' ? 'text' : tool === 'cursor' ? 'default' : tool === 'stamp' ? 'crosshair' : 'crosshair'
-                }}
-                onMouseDown={startDrawing}
-                onMouseMove={draw}
-                onMouseUp={stopDrawing}
-                onMouseLeave={stopDrawing}
-                onClick={handleCanvasClick}
-            />
-            
-            {/* Text Input Overlay */}
-            {textInput.show && (
-                <input
-                    type="text"
-                    autoFocus
-                    value={textInput.value}
-                    onChange={(e) => setTextInput({ ...textInput, value: e.target.value })}
-                    onBlur={handleTextSubmit}
-                    onKeyDown={(e) => e.key === 'Enter' && handleTextSubmit()}
-                    style={{
-                        position: 'absolute',
-                        left: textInput.x,
-                        top: textInput.y,
-                        zIndex: 30,
-                        color: color,
-                        fontSize: `${brushSize * 5 + 10}px`,
-                        background: 'transparent',
-                        border: '1px dashed rgba(255,255,255,0.5)',
-                        outline: 'none',
-                        padding: '2px',
-                        minWidth: '100px'
-                    }}
-                    placeholder="Type here..."
-                />
-            )}
-        </>
+      <>
+        {layers.map((layer) => (
+          <canvas
+            key={layer.id}
+            ref={(el) => {
+              if (el) canvasRefs.current[layer.id] = el;
+            }}
+            className={`absolute top-0 left-0 transition-opacity ${
+              tool === 'cursor' || layer.id !== currentLayer
+                ? 'pointer-events-none'
+                : 'pointer-events-auto'
+            }`}
+            style={{
+              width,
+              height,
+              zIndex: 20 + layer.id,
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              opacity: layer.visible ? layer.opacity : 0,
+              cursor:
+                layer.id === currentLayer && !layer.locked
+                  ? tool === 'text'
+                    ? 'text'
+                    : tool === 'cursor'
+                    ? 'default'
+                    : 'crosshair'
+                  : 'default',
+            }}
+            onMouseDown={layer.id === currentLayer ? startDrawing : undefined}
+            onMouseMove={layer.id === currentLayer ? draw : undefined}
+            onMouseUp={layer.id === currentLayer ? stopDrawing : undefined}
+            onMouseLeave={layer.id === currentLayer ? stopDrawing : undefined}
+            onClick={layer.id === currentLayer ? handleCanvasClick : undefined}
+          />
+        ))}
+
+        {/* Text Input Overlay */}
+        {textInput.show && (
+          <input
+            type="text"
+            autoFocus
+            value={textInput.value}
+            onChange={(e) => setTextInput({ ...textInput, value: e.target.value })}
+            onBlur={handleTextSubmit}
+            onKeyDown={(e) => e.key === 'Enter' && handleTextSubmit()}
+            style={{
+              position: 'absolute',
+              left: textInput.x,
+              top: textInput.y,
+              zIndex: 100,
+              color: color,
+              fontSize: `${brushSize * 5 + 10}px`,
+              background: 'transparent',
+              border: '1px dashed rgba(255,255,255,0.5)',
+              outline: 'none',
+              padding: '2px',
+              minWidth: '100px',
+            }}
+            placeholder="Type here..."
+          />
+        )}
+      </>
     );
-});
+  }
+);
 
 export default CanvasOverlay;

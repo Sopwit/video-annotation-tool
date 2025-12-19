@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, Square, Pen, Eraser, StopCircle, Trash2, Link as LinkIcon, X, Maximize2, MousePointer2, Circle, ArrowRight, Type, Undo, Redo, Download, Sticker, BookmarkPlus, PanelRightOpen, PanelRightClose } from 'lucide-react';
+import { Play, Pause, Square, Pen, Eraser, StopCircle, Trash2, Link as LinkIcon, X, Maximize2, MousePointer2, Circle, ArrowRight, Type, Undo, Redo, Download, Sticker, BookmarkPlus, PanelRightOpen, PanelRightClose, Save, Settings, Layers, Film, Minus } from 'lucide-react';
 
 const Toolbar = ({
     videoUrl,
@@ -25,7 +25,13 @@ const Toolbar = ({
     onAddBookmark,
     onToggleSidebar,
     isSidebarOpen,
-    isYouTube
+    isYouTube,
+    onSaveProject,
+    onToggleTimeline,
+    showTimeline,
+    onToggleLayers,
+    showLayers,
+    onOpenSettings,
 }) => {
     const [showUrlDialog, setShowUrlDialog] = useState(false);
     const [inputValue, setInputValue] = useState(videoUrl);
@@ -219,6 +225,15 @@ const Toolbar = ({
                         <ArrowRight size={18} />
                     </button>
 
+                    {/* Line Tool */}
+                    <button
+                        onClick={() => setTool('line')}
+                        className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95 ${tool === 'line' ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'}`}
+                        title="Line"
+                    >
+                        <Minus size={18} />
+                    </button>
+
                     {/* Color Picker Popover */}
                     <div className="relative z-50" ref={colorPickerRef}>
                         <button
@@ -358,6 +373,55 @@ const Toolbar = ({
                             <span>Stop</span>
                         </button>
                     )}
+                </div>
+
+                <div className="w-px h-8 bg-white/10 mx-1 flex-shrink-0" />
+
+                {/* New v1.2 Actions */}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                    {/* Save Project */}
+                    <button
+                        onClick={onSaveProject}
+                        className="w-10 h-10 flex items-center justify-center rounded-xl bg-green-500/20 hover:bg-green-500/30 text-green-400 hover:text-green-300 border border-green-500/30 transition-all active:scale-95"
+                        title="Save Project"
+                    >
+                        <Save size={18} />
+                    </button>
+
+                    {/* Toggle Timeline */}
+                    <button
+                        onClick={onToggleTimeline}
+                        className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95 ${
+                            showTimeline
+                                ? 'bg-white/20 text-white border border-white/20'
+                                : 'bg-white/5 text-white/60 hover:text-white hover:bg-white/10'
+                        }`}
+                        title={showTimeline ? 'Hide Timeline' : 'Show Timeline'}
+                    >
+                        <Film size={18} />
+                    </button>
+
+                    {/* Toggle Layers */}
+                    <button
+                        onClick={onToggleLayers}
+                        className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95 ${
+                            showLayers
+                                ? 'bg-white/20 text-white border border-white/20'
+                                : 'bg-white/5 text-white/60 hover:text-white hover:bg-white/10'
+                        }`}
+                        title={showLayers ? 'Hide Layers' : 'Show Layers'}
+                    >
+                        <Layers size={18} />
+                    </button>
+
+                    {/* Settings */}
+                    <button
+                        onClick={onOpenSettings}
+                        className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-all active:scale-95"
+                        title="Settings"
+                    >
+                        <Settings size={18} />
+                    </button>
                 </div>
 
             </div>
