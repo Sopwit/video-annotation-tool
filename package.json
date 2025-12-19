@@ -6,7 +6,7 @@
   "description": "A powerful cross-platform video annotation tool for macOS, Windows, and Linux",
   "license": "MIT",
   "author": "Sopwit",
-  "main": "electron/main.cjs",
+  "main": "backend/main.cjs",
   "homepage": "https://github.com/Sopwit/video-annotation-tool",
   "repository": {
     "type": "git",
@@ -64,7 +64,7 @@
     "productName": "Video Annotation Tool",
     "files": [
       "dist/**/*",
-      "electron/**/*",
+      "backend/**/*",
       "package.json"
     ],
     "directories": {

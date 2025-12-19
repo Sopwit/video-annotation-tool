@@ -91,15 +91,20 @@ Derlenen uygulama, bağımsız bir masaüstü programı olarak çalışacaktır.
 
 ```
 video-annotation-tool/
-├── electron/              # Yerel OS entegrasyonu (Ana Süreç)
-├── src/
-│   ├── components/       # Arayüz Bileşenleri (Toolbar, Timeline, Canvas)
-│   ├── services/         # Mantık (AI, Veritabanı, Export)
-│   ├── store/            # Durum Yönetimi (Zustand)
-│   ├── themes/           # CSS & Tasarım Tokenları
-│   └── App.jsx           # Uygulama Kökü
-├── docs/                 # Detaylı Dokümantasyon
-└── release/              # Üretim Çıktıları
+├── backend/             # Electron ana süreci (eski adıyla electron/)
+│   ├── main.cjs
+│   └── preload.cjs
+├── src/                 # React uygulaması
+│   ├── components/
+│   ├── services/
+│   ├── store/
+│   ├── themes/
+│   └── App.jsx
+├── config/              # Yapılandırma dosyaları
+├── scripts/             # Derleme ve bakım betikleri
+├── tests/               # Birim ve E2E testleri
+├── docs/                # Dokümantasyon
+└── release/             # Üretim Çıktıları
 ```
 
 ## ⌨️ Klavye Kısayolları

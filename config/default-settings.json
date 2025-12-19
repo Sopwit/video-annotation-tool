@@ -1,0 +1,9 @@
+{
+  "theme": "dark",
+  "autoSave": true,
+  "autoSaveInterval": 60000,
+  "shortcuts": {
+    "pen": "p",
+    "eraser": "e"
+  }
+}

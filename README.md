@@ -91,15 +91,20 @@ The compiled application will act as a standalone desktop app.
 
 ```
 video-annotation-tool/
-├── electron/              # Native OS integration (Main Process)
-├── src/
-│   ├── components/       # UI Components (Toolbar, Timeline, Canvas)
-│   ├── services/         # Logic (AI, Database, Export)
-│   ├── store/            # State Management (Zustand)
-│   ├── themes/           # CSS & Design Tokens
-│   └── App.jsx           # Application Root
-├── docs/                 # Detailed Documentation
-└── release/              # Production Builds
+├── backend/             # Electron main process (formerly electron/)
+│   ├── main.cjs
+│   └── preload.cjs
+├── src/                 # React application
+│   ├── components/
+│   ├── services/
+│   ├── store/
+│   ├── themes/
+│   └── App.jsx
+├── config/              # Configuration files
+├── scripts/             # Build and maintenance scripts
+├── tests/               # Unit and E2E tests
+├── docs/                # Documentation
+└── release/             # Production Builds
 ```
 
 ## ⌨️ Keyboard Shortcuts
