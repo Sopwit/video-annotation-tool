@@ -1,7 +1,8 @@
 {
   "name": "video-annotation-tool",
+  "private": true,
   "productName": "Video Annotation Tool",
-  "version": "1.0.0",
+  "version": "1.4.0",
   "description": "A powerful cross-platform video annotation tool for macOS, Windows, and Linux",
   "license": "MIT",
   "author": "Sopwit",

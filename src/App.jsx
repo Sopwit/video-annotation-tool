@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import VideoPlayer from './components/VideoPlayer';
 import CanvasOverlay from './components/CanvasOverlay';
 import Toolbar from './components/Toolbar';
@@ -6,6 +6,10 @@ import Sidebar from './components/Sidebar';
 import Timeline from './components/Timeline';
 import LayerManager from './components/LayerManager';
 import SettingsPanel from './components/SettingsPanel';
+import WelcomeScreen from './components/WelcomeScreen';
+import ToastContainer from './components/ToastContainer';
+import StatusBar from './components/StatusBar';
+import KeyboardShortcutsHelp from './components/KeyboardShortcutsHelp';
 import useRecorder from './hooks/useRecorder';
 import useStore from './store/useStore';
 import { saveProject, scheduleAutoSave, cancelAutoSave } from './services/database';
@@ -38,6 +42,8 @@ function App() {
     updateBookmark,
     deleteBookmark,
     toggleSidebar,
+    addToast,
+    addRecentFile,
   } = useStore();
 
   // Local UI State
@@ -46,6 +52,7 @@ function App() {
   const [showTimeline, setShowTimeline] = useState(true);
   const [showLayerManager, setShowLayerManager] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showShortcutsHelp, setShowShortcutsHelp] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState(null);
 
   // Refs
@@ -65,18 +72,20 @@ function App() {
 
     const updateSize = () => {
       if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
         setContainerSize({
-          width: containerRef.current.offsetWidth,
-          height: containerRef.current.offsetHeight,
+          width: rect.width,
+          height: rect.height,
         });
       }
     };
 
+    updateSize();
     const resizeObserver = new ResizeObserver(() => updateSize());
     resizeObserver.observe(containerRef.current);
 
     return () => resizeObserver.disconnect();
-  }, [isSidebarOpen, showLayerManager]);
+  }, [isSidebarOpen, showLayerManager, showTimeline]);
 
   // Auto-switch to cursor mode for YouTube videos
   useEffect(() => {
@@ -102,17 +111,43 @@ function App() {
     return unsubscribe;
   }, []);
 
+  // Event Handlers
+  const handleUndo = useCallback(() => {
+    if (canvasOverlayRef.current) {
+      canvasOverlayRef.current.undo();
+    }
+  }, []);
+
+  const handleRedo = useCallback(() => {
+    if (canvasOverlayRef.current) {
+      canvasOverlayRef.current.redo();
+    }
+  }, []);
+
   // Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Ignore if typing in an input
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
       const shortcut = settings.shortcuts;
       const key = e.key.toLowerCase();
       const isMod = e.ctrlKey || e.metaKey;
 
-      // Check for undo/redo
+      // Keyboard shortcuts help
+      if (key === '?' && !isMod) {
+        e.preventDefault();
+        setShowShortcutsHelp(true);
+        return;
+      }
+
+      // Esc to close modals
+      if (key === 'escape') {
+        setShowShortcutsHelp(false);
+        setShowSettings(false);
+        return;
+      }
+
+      // Undo/Redo
       if (isMod && key === 'z') {
         e.preventDefault();
         if (e.shiftKey) {
@@ -148,7 +183,7 @@ function App() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [settings.shortcuts, setTool]);
+  }, [settings.shortcuts, setTool, handleUndo, handleRedo]);
 
   // Auto-save functionality
   useEffect(() => {
@@ -162,77 +197,106 @@ function App() {
       name: 'Current Project',
       videoUrl,
       layers,
-      annotations: [], // Would come from canvas
+      annotations: [],
       bookmarks,
     };
 
     scheduleAutoSave(projectData, settings.autoSaveInterval);
-
     return () => cancelAutoSave();
   }, [settings.autoSave, settings.autoSaveInterval, currentProjectId, videoUrl, layers, bookmarks]);
 
-  // Event Handlers
-  const handlePlayPause = () => {
+  const handleLoadVideo = useCallback((url) => {
+    if (!url) return;
+    
+    setVideoUrl(url);
+    
+    // Add to recent files
+    addRecentFile({
+      path: url,
+      name: url.includes('youtube') ? 'YouTube Video' : url.split('/').pop(),
+      type: url.includes('youtube') ? 'youtube' : 'local',
+    });
+    
+    addToast({
+      type: 'success',
+      message: 'Video loaded successfully!',
+    });
+  }, [setVideoUrl, addRecentFile, addToast]);
+
+  const handlePlayPause = useCallback(() => {
     if (isYouTube) {
-      console.log('YouTube video - use iframe controls');
+      addToast({
+        type: 'info',
+        message: 'Use YouTube player controls for playback',
+      });
       return;
     }
     setIsPlaying(!isPlaying);
-  };
+  }, [isYouTube, isPlaying, setIsPlaying, addToast]);
 
-  const handleStop = () => {
+  const handleStop = useCallback(() => {
     setIsPlaying(false);
     if (!isYouTube && videoRef.current && videoRef.current.pause) {
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
     }
-  };
+  }, [isYouTube, setIsPlaying]);
 
-  const handleClear = () => {
-    setClearTrigger((prev) => prev + 1);
-  };
-
-  const handleUndo = () => {
-    if (canvasOverlayRef.current) {
-      canvasOverlayRef.current.undo();
+  const handleClear = useCallback(() => {
+    if (confirm('Clear all annotations on current layer?')) {
+      setClearTrigger((prev) => prev + 1);
+      addToast({
+        type: 'info',
+        message: 'Canvas cleared',
+      });
     }
-  };
+  }, [addToast]);
 
-  const handleRedo = () => {
-    if (canvasOverlayRef.current) {
-      canvasOverlayRef.current.redo();
-    }
-  };
-
-  const handleDownload = () => {
+  const handleDownload = useCallback(() => {
     if (canvasOverlayRef.current) {
       canvasOverlayRef.current.download();
+      addToast({
+        type: 'success',
+        message: 'Annotation exported as PNG',
+      });
     }
-  };
+  }, [addToast]);
 
-  const handleStartRecording = async () => {
+  const handleStartRecording = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({
         video: { cursor: 'always' },
         audio: true,
       });
       await startRecording(stream);
+      addToast({
+        type: 'success',
+        message: 'Screen recording started',
+      });
     } catch (err) {
       console.error('Error starting screen capture:', err);
+      addToast({
+        type: 'error',
+        message: 'Failed to start recording',
+      });
     }
-  };
+  }, [startRecording, addToast]);
 
-  const handleStopRecording = async () => {
+  const handleStopRecording = useCallback(async () => {
     const blob = await stopRecording();
     if (blob) {
       const filename = prompt('Enter filename to save recording:', 'recording');
       if (filename) {
         saveRecording(blob, filename);
+        addToast({
+          type: 'success',
+          message: 'Recording saved successfully',
+        });
       }
     }
-  };
+  }, [stopRecording, saveRecording, addToast]);
 
-  const handleAddBookmark = async () => {
+  const handleAddBookmark = useCallback(async () => {
     const currentTime = videoRef.current ? videoRef.current.getCurrentTime() : 0;
     const note = prompt('Enter a note for this timestamp:', 'Important Moment');
     
@@ -257,58 +321,117 @@ function App() {
       if (!isSidebarOpen) {
         toggleSidebar();
       }
+      
+      addToast({
+        type: 'success',
+        message: 'Bookmark added',
+      });
     }
-  };
+  }, [addBookmark, isSidebarOpen, toggleSidebar, addToast]);
 
-  const handleEditBookmark = (id, newText) => {
+  const handleEditBookmark = useCallback((id, newText) => {
     updateBookmark(id, { text: newText, note: newText });
-  };
+    addToast({
+      type: 'info',
+      message: 'Bookmark updated',
+    });
+  }, [updateBookmark, addToast]);
 
-  const handleJumpToTime = (time) => {
+  const handleJumpToTime = useCallback((time) => {
     if (videoRef.current) {
       videoRef.current.seekTo(time);
       if (!isPlaying && !isYouTube) setIsPlaying(true);
     }
-  };
+  }, [isPlaying, isYouTube, setIsPlaying]);
 
-  const handleDeleteBookmark = (id) => {
+  const handleDeleteBookmark = useCallback((id) => {
     deleteBookmark(id);
-  };
+    addToast({
+      type: 'info',
+      message: 'Bookmark deleted',
+    });
+  }, [deleteBookmark, addToast]);
 
-  const handleSeek = (time) => {
+  const handleSeek = useCallback((time) => {
     if (videoRef.current) {
       videoRef.current.seekTo(time);
     }
-  };
+  }, []);
 
-  const handleSaveProject = async () => {
+  const handleSaveProject = useCallback(async () => {
     try {
       const projectData = {
         name: prompt('Enter project name:', 'My Project') || 'Untitled',
         videoUrl,
         layers,
-        annotations: [], // TODO: Get from canvas
+        annotations: [],
         bookmarks,
       };
 
       const projectId = await saveProject(projectData);
       setCurrentProjectId(projectId);
-      alert('Project saved successfully!');
+      addToast({
+        type: 'success',
+        message: 'Project saved successfully!',
+      });
     } catch (error) {
       console.error('Error saving project:', error);
-      alert('Failed to save project');
+      addToast({
+        type: 'error',
+        message: 'Failed to save project',
+      });
     }
-  };
+  }, [videoUrl, layers, bookmarks, addToast]);
+
+  const handleOpenRecent = useCallback((project) => {
+    // TODO: Implement project loading
+    addToast({
+      type: 'info',
+      message: `Opening ${project.name}...`,
+    });
+  }, [addToast]);
+
+  // Calculate layout dimensions
+  const sidebarWidth = isSidebarOpen ? 320 : 0;
+  const layerManagerWidth = showLayerManager ? 280 : 0;
+  const timelineHeight = showTimeline ? 160 : 0;
+
+  // Show welcome screen if no video loaded
+  if (!videoUrl) {
+    return (
+      <div className="relative w-screen h-screen bg-[#0a0a0a] text-white overflow-hidden font-sans">
+        {/* Liquid Glass Animated Background */}
+        <div className="liquid-glass-bg" />
+        
+        <WelcomeScreen 
+          onLoadVideo={handleLoadVideo}
+          onOpenRecent={handleOpenRecent}
+        />
+        <ToastContainer />
+        <KeyboardShortcutsHelp 
+          isOpen={showShortcutsHelp} 
+          onClose={() => setShowShortcutsHelp(false)} 
+        />
+      </div>
+    );
+  }
 
   return (
-    <div className="relative w-screen h-screen bg-[#0a0a0a] text-white overflow-hidden font-sans selection:bg-blue-500/30 flex flex-col">
+    <div className="relative w-screen h-screen bg-[#0a0a0a] text-white overflow-hidden font-sans flex flex-col">
       {/* Main Content Area */}
-      <div className="flex-1 flex overflow-hidden relative">
+      <div className="flex-1 flex relative overflow-hidden">
         {/* Video Container */}
-        <div className={`flex-1 flex items-center justify-center p-8 transition-all duration-300 ${showTimeline ? 'pb-32' : 'pb-24'}`}>
+        <div 
+          className="flex-1 flex items-center justify-center p-4"
+          style={{
+            paddingRight: sidebarWidth + layerManagerWidth + 16,
+            paddingBottom: timelineHeight + 96,
+          }}
+        >
           <div
             ref={containerRef}
-            className="relative w-full h-full max-w-6xl aspect-video rounded-2xl shadow-2xl ring-1 ring-white/10 bg-black transition-all"
+            className="relative w-full h-full max-w-6xl aspect-video rounded-xl shadow-2xl ring-1 ring-white/10 bg-black overflow-hidden"
+            style={{ zIndex: 'var(--z-video)' }}
           >
             <VideoPlayer
               ref={videoRef}
@@ -336,9 +459,13 @@ function App() {
 
         {/* Right Sidebar - Bookmarks */}
         <div
-          className={`absolute right-0 top-0 h-full z-40 transition-transform duration-300 transform ${
+          className={`fixed right-0 top-0 h-full transition-transform duration-300 ease-in-out ${
             isSidebarOpen ? 'translate-x-0' : 'translate-x-full'
-          } flex`}
+          }`}
+          style={{ 
+            zIndex: 'var(--z-sidebar)',
+            width: '320px',
+          }}
         >
           <Sidebar
             isOpen={true}
@@ -352,10 +479,14 @@ function App() {
 
         {/* Right Panel - Layer Manager */}
         <div
-          className={`absolute right-0 top-0 h-full z-30 transition-transform duration-300 transform ${
+          className={`fixed top-0 h-full transition-all duration-300 ease-in-out ${
             showLayerManager ? 'translate-x-0' : 'translate-x-full'
           }`}
-          style={{ right: isSidebarOpen ? '320px' : '0' }}
+          style={{ 
+            zIndex: 'var(--z-layer-manager)',
+            right: isSidebarOpen ? '320px' : '0',
+            width: '280px',
+          }}
         >
           {showLayerManager && <LayerManager />}
         </div>
@@ -363,47 +494,68 @@ function App() {
 
       {/* Timeline */}
       {showTimeline && (
-        <div className="absolute bottom-20 left-0 right-0 z-20">
+        <div 
+          className="fixed bottom-20 left-0 right-0 animate-slide-up"
+          style={{ zIndex: 'var(--z-timeline)' }}
+        >
           <Timeline videoRef={videoRef} onSeek={handleSeek} />
         </div>
       )}
 
-      {/* Floating Toolbar */}
-      <Toolbar
-        videoUrl={videoUrl}
-        setVideoUrl={setVideoUrl}
-        isPlaying={isPlaying}
-        onPlayPause={handlePlayPause}
-        onStop={handleStop}
-        tool={tool}
-        setTool={setTool}
-        brushSize={brushSize}
-        setBrushSize={setBrushSize}
-        isRecording={isRecording}
-        onStartRecording={handleStartRecording}
-        onStopRecording={handleStopRecording}
-        color={color}
-        setColor={setColor}
-        onClear={handleClear}
-        onUndo={handleUndo}
-        onRedo={handleRedo}
-        onDownload={handleDownload}
-        activeStamp={activeStamp}
-        setActiveStamp={setActiveStamp}
-        onAddBookmark={handleAddBookmark}
-        onToggleSidebar={toggleSidebar}
-        isSidebarOpen={isSidebarOpen}
-        isYouTube={isYouTube}
-        onSaveProject={handleSaveProject}
-        onToggleTimeline={() => setShowTimeline(!showTimeline)}
-        showTimeline={showTimeline}
-        onToggleLayers={() => setShowLayerManager(!showLayerManager)}
-        showLayers={showLayerManager}
-        onOpenSettings={() => setShowSettings(true)}
+      {/* Toolbar */}
+      <div 
+        className="fixed bottom-0 left-0 right-0"
+        style={{ zIndex: 'var(--z-toolbar)' }}
+      >
+        <Toolbar
+          videoUrl={videoUrl}
+          setVideoUrl={handleLoadVideo}
+          isPlaying={isPlaying}
+          onPlayPause={handlePlayPause}
+          onStop={handleStop}
+          tool={tool}
+          setTool={setTool}
+          brushSize={brushSize}
+          setBrushSize={setBrushSize}
+          isRecording={isRecording}
+          onStartRecording={handleStartRecording}
+          onStopRecording={handleStopRecording}
+          color={color}
+          setColor={setColor}
+          onClear={handleClear}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
+          onDownload={handleDownload}
+          activeStamp={activeStamp}
+          setActiveStamp={setActiveStamp}
+          onAddBookmark={handleAddBookmark}
+          onToggleSidebar={toggleSidebar}
+          isSidebarOpen={isSidebarOpen}
+          isYouTube={isYouTube}
+          onSaveProject={handleSaveProject}
+          onToggleTimeline={() => setShowTimeline(!showTimeline)}
+          showTimeline={showTimeline}
+          onToggleLayers={() => setShowLayerManager(!showLayerManager)}
+          showLayers={showLayerManager}
+          onOpenSettings={() => setShowSettings(true)}
+        />
+      </div>
+
+      {/* Status Bar */}
+      <StatusBar 
+        videoName={videoUrl.split('/').pop() || 'Video'} 
+        fps={30}
       />
 
-      {/* Settings Panel */}
+      {/* Modals */}
       <SettingsPanel isOpen={showSettings} onClose={() => setShowSettings(false)} />
+      <KeyboardShortcutsHelp 
+        isOpen={showShortcutsHelp} 
+        onClose={() => setShowShortcutsHelp(false)} 
+      />
+      
+      {/* Toast Notifications */}
+      <ToastContainer />
     </div>
   );
 }

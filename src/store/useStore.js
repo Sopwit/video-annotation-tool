@@ -59,6 +59,9 @@ const useStore = create(
       // Recent Files
       recentFiles: [],
       
+      // Toast Notifications
+      toasts: [],
+      
       // Actions
       setVideoUrl: (url) => set({ videoUrl: url, isYouTube: /youtube|youtu\.be/.test(url) }),
       setIsPlaying: (playing) => set({ isPlaying: playing }),
@@ -150,6 +153,15 @@ const useStore = create(
       }),
       
       clearRecentFiles: () => set({ recentFiles: [] }),
+      
+      // Toast Notifications
+      addToast: (toast) => set((state) => ({
+        toasts: [...state.toasts, { id: Date.now(), ...toast }]
+      })),
+      
+      removeToast: (id) => set((state) => ({
+        toasts: state.toasts.filter(t => t.id !== id)
+      })),
       
       // Reset
       reset: () => set({

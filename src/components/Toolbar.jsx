@@ -88,12 +88,13 @@ const Toolbar = ({
 
     return (
         <>
-            <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl p-3 flex items-center gap-3 shadow-2xl z-50 transition-all hover:bg-black/90 max-w-[95vw] overflow-x-auto">
+            <div className="fixed bottom-8 left-1/2 -translate-x-1/2 liquid-toolbar rounded-2xl p-3 flex items-center gap-3 shadow-2xl z-50 transition-all max-w-[95vw] overflow-x-auto float-subtle glow-blue">
+
 
                 {/* URL Input Button */}
                 <button
                     onClick={handleOpenDialog}
-                    className="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 transition-colors cursor-pointer text-white/70 hover:text-white"
+                    className="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-xl liquid-button transition-colors cursor-pointer text-white/70 hover:text-white"
                     title="Add Video URL"
                 >
                     <LinkIcon size={18} />
