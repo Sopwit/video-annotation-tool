@@ -5,12 +5,28 @@ const Sidebar = ({ isOpen, bookmarks, onJump, onDelete, onEdit, onClose }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [editingId, setEditingId] = useState(null);
     const [editValue, setEditValue] = useState('');
+    const [audioPlayingId, setAudioPlayingId] = useState(null);
+    const audioRef = React.useRef(new Audio());
 
     const formatTime = (seconds) => {
         const date = new Date(seconds * 1000);
         const mm = date.getUTCMinutes();
         const ss = date.getUTCSeconds().toString().padStart(2, '0');
         return `${mm}:${ss}`;
+    };
+
+    const playAudio = (bookmark) => {
+      if (audioPlayingId === bookmark.id) {
+        audioRef.current.pause();
+        setAudioPlayingId(null);
+      } else {
+        if (bookmark.audioUrl) {
+            audioRef.current.src = bookmark.audioUrl;
+            audioRef.current.play();
+            setAudioPlayingId(bookmark.id);
+            audioRef.current.onended = () => setAudioPlayingId(null);
+        }
+      }
     };
 
     const filteredBookmarks = bookmarks.filter(b => 
@@ -42,9 +58,9 @@ const Sidebar = ({ isOpen, bookmarks, onJump, onDelete, onEdit, onClose }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="w-80 h-full bg-[#0a0a0a] border-l border-white/10 flex flex-col shadow-2xl z-50">
+        <div className="w-80 h-full liquid-sidebar flex flex-col shadow-2xl z-50 shimmer">
             {/* Header */}
-            <div className="p-4 border-b border-white/10 bg-black/20">
+            <div className="p-4 border-b border-white/10 glass-light">
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="font-semibold text-white flex items-center gap-2">
                         <Clock size={18} className="text-blue-500" />
@@ -95,7 +111,7 @@ const Sidebar = ({ isOpen, bookmarks, onJump, onDelete, onEdit, onClose }) => {
                     </div>
                 ) : (
                     filteredBookmarks.map((bm) => (
-                        <div key={bm.id} className="bg-white/5 border border-white/5 rounded-xl overflow-hidden group hover:border-white/10 transition-all">
+                        <div key={bm.id} className="liquid-card liquid-reflection-hover cursor-pointer">
                             
                             {/* Thumbnail Image (if exists) */}
                             {bm.thumbnail && (
@@ -145,6 +161,22 @@ const Sidebar = ({ isOpen, bookmarks, onJump, onDelete, onEdit, onClose }) => {
                                 ) : (
                                     <div className="relative">
                                         <p className="text-sm text-white/80 break-words whitespace-pre-wrap">{bm.text}</p>
+                                        
+                                        {/* Audio Player if Attached */}
+                                        {bm.audioUrl && (
+                                            <div className="mt-2 flex items-center gap-2 bg-white/5 p-2 rounded-lg border border-white/5">
+                                                <button 
+                                                    onClick={(e) => { e.stopPropagation(); playAudio(bm); }}
+                                                    className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-500/20 text-blue-400 hover:bg-blue-500 hover:text-white transition-all"
+                                                >
+                                                    {audioPlayingId === bm.id ? <div className="w-2.5 h-2.5 bg-current rounded-sm" /> : <Play size={14} fill="currentColor" />}
+                                                </button>
+                                                <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
+                                                    <div className={`h-full bg-blue-500/50 ${audioPlayingId === bm.id ? 'animate-progress origin-left w-full' : 'w-0'}`} style={{ animationDuration: '5s' }} />
+                                                </div>
+                                                <span className="text-[10px] text-white/50 font-mono">Voice Note</span>
+                                            </div>
+                                        )}
                                         
                                         {/* Action Buttons (Hover only) */}
                                         <div className="flex justify-end gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">

@@ -2,8 +2,8 @@ import React, { useRef, useEffect, useState } from 'react';
 import { Play, Pause, SkipBack, SkipForward, Bookmark } from 'lucide-react';
 import useStore from '../store/useStore';
 
-const Timeline = ({ videoRef, onSeek }) => {
-  const { duration, progress, bookmarks, isPlaying } = useStore();
+const Timeline = ({ onSeek }) => {
+  const { duration, progress, bookmarks } = useStore();
   const [hoveredTime, setHoveredTime] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const timelineRef = useRef(null);

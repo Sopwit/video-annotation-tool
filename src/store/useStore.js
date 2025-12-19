@@ -3,7 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 
 const useStore = create(
   persist(
-    (set, get) => ({
+    (set) => ({
       // Video State
       videoUrl: '',
       isPlaying: false,

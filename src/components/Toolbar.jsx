@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, Square, Pen, Eraser, StopCircle, Trash2, Link as LinkIcon, X, Maximize2, MousePointer2, Circle, ArrowRight, Type, Undo, Redo, Download, Sticker, BookmarkPlus, PanelRightOpen, PanelRightClose, Save, Settings, Layers, Film, Minus } from 'lucide-react';
+import { Play, Pause, Square, Pen, Eraser, StopCircle, Trash2, Link as LinkIcon, X, Maximize2, MousePointer2, Circle, ArrowRight, Type, Undo, Redo, Download, Sticker, BookmarkPlus, PanelRightOpen, PanelRightClose, Save, Settings, Layers, Film, Minus, Sparkles, Mic, Move } from 'lucide-react';
 
 const Toolbar = ({
     videoUrl,
@@ -32,6 +32,7 @@ const Toolbar = ({
     onToggleLayers,
     showLayers,
     onOpenSettings,
+    onAiDetect,
 }) => {
     const [showUrlDialog, setShowUrlDialog] = useState(false);
     const [inputValue, setInputValue] = useState(videoUrl);
@@ -339,6 +340,40 @@ const Toolbar = ({
                         <BookmarkPlus size={18} />
                     </button>
 
+                     <button
+                        onClick={() => {
+                            // Temporary direct implementation of voice note logic for demo
+                            // Ideally this should be passed down
+                             if (window.confirm("Start Recording Voice Note? (Max 5s Demo)")) {
+                                navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+                                    const mediaRecorder = new MediaRecorder(stream);
+                                    const audioChunks = [];
+                                    mediaRecorder.addEventListener("dataavailable", event => {
+                                        audioChunks.push(event.data);
+                                    });
+                                    mediaRecorder.addEventListener("stop", () => {
+                                        const audioBlob = new Blob(audioChunks);
+                                        const audioUrl = URL.createObjectURL(audioBlob);
+                                        // Trigger add bookmark with audio
+                                        // Since we don't have direct access to 'addBookmark' with content here easily without state lift,
+                                        // we will dispatch a custom event or callback.
+                                        // For now, let's assume onAddBookmark can accept data object or we need a new prop.
+                                        // Let's rely on a minimal 'onAddVoiceNote' prop if possible, or hack it via existing flow.
+                                        
+                                        const event = new CustomEvent('addVoiceNote', { detail: { audioUrl } });
+                                        window.dispatchEvent(event);
+                                    });
+                                    mediaRecorder.start();
+                                    setTimeout(() => mediaRecorder.stop(), 5000); // Record for 5 seconds
+                                });
+                             }
+                        }}
+                        className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 hover:bg-pink-500/20 text-white/70 hover:text-pink-400 transition-all active:scale-95"
+                        title="Add Voice Note (5s)"
+                    >
+                        <Mic size={18} />
+                    </button>
+
                     <button
                         onClick={onToggleSidebar}
                         className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95 ${isSidebarOpen ? 'bg-white/20 text-white' : 'bg-white/5 text-white/70 hover:text-white'}`}
@@ -380,6 +415,15 @@ const Toolbar = ({
 
                 {/* New v1.2 Actions */}
                 <div className="flex items-center gap-2 flex-shrink-0">
+                    {/* AI Magic Button */}
+                    <button
+                        onClick={onAiDetect}
+                        className="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 hover:from-purple-500/40 hover:to-blue-500/40 text-purple-400 border border-purple-500/30 transition-all active:scale-95 shimmer"
+                        title="AI Magic - Auto Detect Objects"
+                    >
+                        <Sparkles size={18} />
+                    </button>
+
                     {/* Save Project */}
                     <button
                         onClick={onSaveProject}
@@ -413,6 +457,15 @@ const Toolbar = ({
                         title={showLayers ? 'Hide Layers' : 'Show Layers'}
                     >
                         <Layers size={18} />
+                    </button>
+
+                    {/* Reset Zoom & View */}
+                    <button
+                        onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))} 
+                        className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-all active:scale-95"
+                        title="Reset View (Esc)"
+                    >
+                        <Move size={18} />
                     </button>
 
                     {/* Settings */}

@@ -1,7 +1,6 @@
 import React, { forwardRef, useState, useEffect, useRef, useImperativeHandle } from 'react';
 
 const VideoPlayer = forwardRef(({ videoUrl, isPlaying, onProgress, onDuration }, ref) => {
-    const [status, setStatus] = useState('idle');
     const videoRef = useRef(null);
     const iframeRef = useRef(null);
     
@@ -91,9 +90,12 @@ const VideoPlayer = forwardRef(({ videoUrl, isPlaying, onProgress, onDuration },
         };
     }, [isYouTube, isPlaying, onProgress]);
 
-    // Reset timer on URL change
+    // Reset timer on URL change (async to avoid cascading renders)
     useEffect(() => {
-        setSimulatedTime(0);
+        const timer = setTimeout(() => {
+            setSimulatedTime(0);
+        }, 0);
+        return () => clearTimeout(timer);
     }, [videoUrl]);
 
     const handleTimeUpdate = () => {
@@ -108,7 +110,6 @@ const VideoPlayer = forwardRef(({ videoUrl, isPlaying, onProgress, onDuration },
 
     const handleLoadedMetadata = () => {
         const video = videoRef.current;
-        setStatus('ready');
         if (video && onDuration) {
             onDuration(video.duration);
         }

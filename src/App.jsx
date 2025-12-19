@@ -13,6 +13,7 @@ import KeyboardShortcutsHelp from './components/KeyboardShortcutsHelp';
 import useRecorder from './hooks/useRecorder';
 import useStore from './store/useStore';
 import { saveProject, scheduleAutoSave, cancelAutoSave } from './services/database';
+import { detectObjects } from './services/aiService';
 
 function App() {
   // Zustand Store
@@ -23,8 +24,6 @@ function App() {
     color,
     brushSize,
     activeStamp,
-    duration,
-    progress,
     bookmarks,
     isSidebarOpen,
     currentLayer,
@@ -54,6 +53,12 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [showShortcutsHelp, setShowShortcutsHelp] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState(null);
+  
+  // Custom Zoom & Pan State
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
+  const [startPan, setStartPan] = useState({ x: 0, y: 0 });
 
   // Refs
   const videoRef = useRef(null);
@@ -144,6 +149,8 @@ function App() {
       if (key === 'escape') {
         setShowShortcutsHelp(false);
         setShowSettings(false);
+        setZoomLevel(1); // Reset Zoom
+        setPanOffset({ x: 0, y: 0 });
         return;
       }
 
@@ -391,6 +398,81 @@ function App() {
     });
   }, [addToast]);
 
+  // Voice Note Event Listener
+  useEffect(() => {
+    const handleAddVoiceNote = (e) => {
+        const { audioUrl } = e.detail;
+        if (videoRef.current) {
+            const currentTime = videoRef.current.getCurrentTime();
+            addBookmark({
+                id: Date.now(),
+                time: currentTime,
+                text: "Voice Note 🎙️",
+                audioUrl: audioUrl,
+                thumbnail: null // Or generate one
+            });
+            addToast({
+                type: 'success',
+                message: 'Voice Note Added!'
+            });
+        }
+    };
+
+    window.addEventListener('addVoiceNote', handleAddVoiceNote);
+    return () => window.removeEventListener('addVoiceNote', handleAddVoiceNote);
+  }, [addBookmark, addToast]);
+
+  const handleAiDetect = useCallback(async () => {
+    if (!videoRef.current) return;
+    
+    const internalPlayer = videoRef.current.getInternalPlayer();
+    
+    // Check if valid video element
+    if (!internalPlayer || !(internalPlayer instanceof HTMLVideoElement)) {
+       addToast({
+        type: 'error',
+        message: 'AI Detection only works on local video files.',
+      });
+      return;
+    }
+
+    try {
+      addToast({
+        type: 'info',
+        message: 'Analyzing frame with AI... Please wait.',
+      });
+      setIsPlaying(false);
+
+      const aiAnnotations = await detectObjects(internalPlayer);
+
+      if (aiAnnotations.length === 0) {
+        addToast({
+          type: 'info',
+          message: 'No objects detected.',
+        });
+        return;
+      }
+
+      if (canvasOverlayRef.current) {
+        canvasOverlayRef.current.addAiAnnotations(aiAnnotations);
+      }
+
+      addToast({
+        type: 'success',
+        message: `Detected ${aiAnnotations.length} objects!`,
+      });
+
+    } catch (error) {
+      console.error('AI Error:', error);
+      addToast({
+        type: 'error',
+        message: 'AI Analysis failed.',
+      });
+    }
+  }, [addToast, setIsPlaying]);
+
+
+
   // Calculate layout dimensions
   const sidebarWidth = isSidebarOpen ? 320 : 0;
   const layerManagerWidth = showLayerManager ? 280 : 0;
@@ -432,7 +514,37 @@ function App() {
             ref={containerRef}
             className="relative w-full h-full max-w-6xl aspect-video rounded-xl shadow-2xl ring-1 ring-white/10 bg-black overflow-hidden"
             style={{ zIndex: 'var(--z-video)' }}
+            onWheel={(e) => {
+                if (e.ctrlKey || e.metaKey) {
+                    e.preventDefault();
+                    setZoomLevel(prev => Math.min(Math.max(prev - e.deltaY * 0.001, 1), 5));
+                }
+            }}
+            onMouseDown={(e) => {
+                if (e.button === 1 || (e.shiftKey)) { // Middle mouse or Shift+Click to Pan
+                    setIsPanning(true);
+                    setStartPan({ x: e.clientX - panOffset.x, y: e.clientY - panOffset.y });
+                    e.preventDefault();
+                }
+            }}
+            onMouseMove={(e) => {
+                if (isPanning) {
+                     setPanOffset({
+                        x: e.clientX - startPan.x,
+                        y: e.clientY - startPan.y
+                    });
+                }
+            }}
+            onMouseUp={() => setIsPanning(false)}
+            onMouseLeave={() => setIsPanning(false)}
           >
+           <div 
+             className="w-full h-full transition-transform duration-100 ease-out origin-top-left"
+             style={{
+                 transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`,
+                 cursor: isPanning ? 'grabbing' : (zoomLevel > 1 ? 'grab' : 'default')
+             }}
+           >
             <VideoPlayer
               ref={videoRef}
               videoUrl={videoUrl}
@@ -453,7 +565,17 @@ function App() {
               videoUrl={videoUrl}
               currentLayer={currentLayer}
               layers={layers}
+              // Pass zoom props to coordinate mapping if needed, 
+              // for now simple transform scales everything visually which matches overlay
             />
+           </div>
+           
+           {/* Zoom Info Indicator */}
+           {zoomLevel > 1 && (
+            <div className="absolute top-4 left-4 bg-black/50 text-white px-2 py-1 rounded text-xs pointer-events-none backdrop-blur-sm z-50">
+                {(zoomLevel * 100).toFixed(0)}%
+            </div>
+           )}
           </div>
         </div>
 
@@ -498,7 +620,7 @@ function App() {
           className="fixed bottom-20 left-0 right-0 animate-slide-up"
           style={{ zIndex: 'var(--z-timeline)' }}
         >
-          <Timeline videoRef={videoRef} onSeek={handleSeek} />
+          <Timeline onSeek={handleSeek} />
         </div>
       )}
 
@@ -538,6 +660,7 @@ function App() {
           onToggleLayers={() => setShowLayerManager(!showLayerManager)}
           showLayers={showLayerManager}
           onOpenSettings={() => setShowSettings(true)}
+          onAiDetect={handleAiDetect}
         />
       </div>
 

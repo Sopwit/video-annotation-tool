@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useImperativeHandle, forwardRef } from 'react';
+import React, { useRef, useEffect, useState, useImperativeHandle, forwardRef, useCallback } from 'react';
 
 const CanvasOverlay = forwardRef(
   ({ width, height, tool, color, brushSize, clearTrigger, isYouTube, activeStamp, videoUrl, currentLayer, layers }, ref) => {
@@ -35,7 +35,7 @@ const CanvasOverlay = forwardRef(
               img.onerror = reject;
             });
             tempCtx.drawImage(img, 0, 0, targetWidth, targetHeight);
-          } catch (e) {
+          } catch {
             tempCtx.fillStyle = '#000';
             tempCtx.fillRect(0, 0, targetWidth, targetHeight);
           }
@@ -45,7 +45,7 @@ const CanvasOverlay = forwardRef(
         if (video) {
           try {
             tempCtx.drawImage(video, 0, 0, targetWidth, targetHeight);
-          } catch (e) {
+          } catch {
             tempCtx.fillStyle = '#000';
             tempCtx.fillRect(0, 0, targetWidth, targetHeight);
           }
@@ -67,38 +67,30 @@ const CanvasOverlay = forwardRef(
       return tempCanvas.toDataURL(targetWidth === width ? 'image/png' : 'image/jpeg', 0.8);
     };
 
-    useImperativeHandle(ref, () => ({
-      undo: () => {
-        if (historyStep > 0) {
-          const newStep = historyStep - 1;
-          setHistoryStep(newStep);
-          restoreState(history[newStep]);
-        } else if (historyStep === 0) {
-          setHistoryStep(-1);
-          clearAllLayers();
+    // Helper functions - defined before imperative handle to avoid hoisting issues
+    const clearAllLayers = useCallback(() => {
+      layers.forEach((layer) => {
+        const canvas = canvasRefs.current[layer.id];
+        if (canvas) {
+          const ctx = canvas.getContext('2d');
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
-      },
-      redo: () => {
-        if (historyStep < history.length - 1) {
-          const newStep = historyStep + 1;
-          setHistoryStep(newStep);
-          restoreState(history[newStep]);
+      });
+    }, [layers]);
+
+    const restoreState = useCallback((layersData) => {
+      if (!layersData) return;
+      Object.entries(layersData).forEach(([layerId, imageData]) => {
+        const canvas = canvasRefs.current[parseInt(layerId)];
+        if (canvas && imageData) {
+          const ctx = canvas.getContext('2d');
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.putImageData(imageData, 0, 0);
         }
-      },
-      download: async () => {
-        const dataUrl = await captureFrame(width, height);
-        const link = document.createElement('a');
-        link.download = `annotation-${Date.now()}.png`;
-        link.href = dataUrl;
-        link.click();
-      },
-      getSnapshot: async () => {
-        const aspectRatio = width / height || 1.77;
-        const thumbWidth = 320;
-        const thumbHeight = thumbWidth / aspectRatio;
-        return await captureFrame(thumbWidth, thumbHeight);
-      },
-    }));
+      });
+    }, []);
+
+
 
     // Initialize canvases for all layers
     useEffect(() => {
@@ -128,33 +120,15 @@ const CanvasOverlay = forwardRef(
 
     useEffect(() => {
       clearAllLayers();
-      setHistory([]);
-      setHistoryStep(-1);
-    }, [clearTrigger]);
-
-    const clearAllLayers = () => {
-      layers.forEach((layer) => {
-        const canvas = canvasRefs.current[layer.id];
-        if (canvas) {
-          const ctx = canvas.getContext('2d');
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
-      });
-    };
+      // Use timeout to avoid synchronous setState in effect
+      const timer = setTimeout(() => {
+        setHistory([]);
+        setHistoryStep(-1);
+      }, 0);
+      return () => clearTimeout(timer);
+    }, [clearTrigger, clearAllLayers]);
 
     const getCurrentCanvas = () => canvasRefs.current[currentLayer];
-
-    const restoreState = (layersData) => {
-      if (!layersData) return;
-      Object.entries(layersData).forEach(([layerId, imageData]) => {
-        const canvas = canvasRefs.current[parseInt(layerId)];
-        if (canvas && imageData) {
-          const ctx = canvas.getContext('2d');
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.putImageData(imageData, 0, 0);
-        }
-      });
-    };
 
     const saveState = () => {
       const layersData = {};
@@ -313,6 +287,65 @@ const CanvasOverlay = forwardRef(
       }
       setTextInput({ ...textInput, show: false });
     };
+
+    useImperativeHandle(ref, () => ({
+      undo: () => {
+        if (historyStep > 0) {
+          const newStep = historyStep - 1;
+          setHistoryStep(newStep);
+          restoreState(history[newStep]);
+        } else if (historyStep === 0) {
+          setHistoryStep(-1);
+          clearAllLayers();
+        }
+      },
+      redo: () => {
+        if (historyStep < history.length - 1) {
+          const newStep = historyStep + 1;
+          setHistoryStep(newStep);
+          restoreState(history[newStep]);
+        }
+      },
+      download: async () => {
+        const dataUrl = await captureFrame(width, height);
+        const link = document.createElement('a');
+        link.download = `annotation-${Date.now()}.png`;
+        link.href = dataUrl;
+        link.click();
+      },
+      getSnapshot: async () => {
+        const aspectRatio = width / height || 1.77;
+        const thumbWidth = 320;
+        const thumbHeight = thumbWidth / aspectRatio;
+        return await captureFrame(thumbWidth, thumbHeight);
+      },
+      addAiAnnotations: (annotations) => {
+        const canvas = canvasRefs.current[currentLayer];
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        
+        // Draw all annotations
+        annotations.forEach(ann => {
+          // Draw Rectangle
+          ctx.strokeStyle = ann.color || '#00ff00';
+          ctx.lineWidth = 2; // Fixed thin line for AI
+          ctx.strokeRect(ann.x, ann.y, ann.width, ann.height);
+          
+          // Draw Label Background
+          ctx.fillStyle = ann.color || '#00ff00';
+          const fontSize = 12;
+          ctx.font = `${fontSize}px sans-serif`;
+          const textWidth = ctx.measureText(ann.text).width;
+          ctx.fillRect(ann.x, ann.y - fontSize - 4, textWidth + 8, fontSize + 4);
+          
+          // Draw Label Text
+          ctx.fillStyle = '#000000';
+          ctx.fillText(ann.text, ann.x + 4, ann.y - 4);
+        });
+        
+        saveState();
+      },
+    }));
 
     return (
       <>

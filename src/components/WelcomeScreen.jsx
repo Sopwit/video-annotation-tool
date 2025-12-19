@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Video, Upload, FolderOpen, Sparkles, ArrowRight } from 'lucide-react';
 
 const WelcomeScreen = ({ onLoadVideo, onOpenRecent }) => {
+  const [showUrlInput, setShowUrlInput] = useState(false);
+  const [urlInput, setUrlInput] = useState('');
   const handleDragOver = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -98,25 +100,70 @@ const WelcomeScreen = ({ onLoadVideo, onOpenRecent }) => {
 
           {/* URL Input */}
           <div
-            onClick={onLoadVideo}
-            className="group relative h-64 rounded-2xl border-2 border-white/10 bg-white/5 hover:bg-purple-500/10 hover:border-purple-500/50 transition-all duration-300 cursor-pointer overflow-hidden"
+            className="group relative h-64 rounded-2xl border-2 border-white/10 bg-white/5 transition-all duration-300 overflow-hidden"
           >
-            <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
-              <div className="w-16 h-16 rounded-xl bg-purple-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Video className="w-8 h-8 text-purple-400" />
+            {showUrlInput ? (
+               <div className="absolute inset-0 flex flex-col items-center justify-center p-8 bg-black/80 backdrop-blur-md z-10 animate-in fade-in zoom-in duration-300">
+                  <h3 className="text-xl font-semibold text-white mb-4">Enter Video URL</h3>
+                  <input
+                    type="text"
+                    placeholder="https://youtube.com/..."
+                    className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-purple-500/50 mb-4"
+                    value={urlInput}
+                    onChange={(e) => setUrlInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && urlInput.trim()) {
+                        onLoadVideo(urlInput.trim());
+                      }
+                      if (e.key === 'Escape') {
+                        setShowUrlInput(false);
+                      }
+                    }}
+                    autoFocus
+                  />
+                  <div className="flex gap-3 w-full">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowUrlInput(false);
+                      }}
+                      className="flex-1 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (urlInput.trim()) onLoadVideo(urlInput.trim());
+                      }}
+                      className="flex-1 px-4 py-2 rounded-lg bg-purple-500 hover:bg-purple-600 text-white font-medium shadow-lg shadow-purple-500/20 transition-colors"
+                    >
+                      Load
+                    </button>
+                  </div>
+               </div>
+            ) : (
+              <div 
+                onClick={() => setShowUrlInput(true)}
+                className="absolute inset-0 cursor-pointer hover:bg-purple-500/10 hover:border-purple-500/50 transition-all duration-300"
+              >
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
+                  <div className="w-16 h-16 rounded-xl bg-purple-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <Video className="w-8 h-8 text-purple-400" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mb-2">
+                    Load from URL
+                  </h3>
+                  <p className="text-white/60 text-sm mb-4">
+                    Paste a video URL from YouTube or direct link
+                  </p>
+                  <div className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-white/60">
+                    https://youtube.com/watch?v=...
+                  </div>
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent translate-x-full group-hover:translate-x-0 transition-transform duration-1000" />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-2">
-                Load from URL
-              </h3>
-              <p className="text-white/60 text-sm mb-4">
-                Paste a video URL from YouTube or direct link
-              </p>
-              <div className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-white/60">
-                https://youtube.com/watch?v=...
-              </div>
-            </div>
-
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent translate-x-full group-hover:translate-x-0 transition-transform duration-1000" />
+            )}
           </div>
         </div>
 
