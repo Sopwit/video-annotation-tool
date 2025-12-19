@@ -2,12 +2,12 @@
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/versiyon-1.2.0-blue.svg)
-![License](https://img.shields.io/badge/lisans-MIT-green.svg)
+![Sürüm](https://img.shields.io/badge/sürüm-1.6.0-blue.svg)
+![Lisans](https://img.shields.io/badge/lisans-MIT-green.svg)
 ![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey.svg)
-![Status](https://img.shields.io/badge/durum-production--ready-success.svg)
+![Durum](https://img.shields.io/badge/durum-production--ready-success.svg)
 
-**Çoklu katman desteği, kare-mükemmel zaman çizelgesi ve profesyonel özellikler ile güçlü, çapraz platform video açıklama aracı**
+**AI algılama, çoklu katman desteği ve profesyonel analiz özelliklerine sahip güçlü, platformlar arası video açıklama aracı.**
 
 [🌐 English](README.md) | [🇹🇷 Türkçe](README.tr.md)
 
@@ -17,351 +17,127 @@
 
 ## 📖 Genel Bakış
 
-Video Annotation Tool, videolara hassas açıklamalar eklemenize olanak tanıyan profesyonel, çapraz platform bir masaüstü uygulamasıdır. React ve Electron ile geliştirilmiş olup, çoklu katman açıklama desteği, kare-kare navigasyon ve eğitim, spor analizi, içerik oluşturma ve araştırma için mükemmel olan kapsamlı bir çizim araçları seti sunar.
+**Video Annotation Tool**, hassas video analizi ve işaretleme işlemleri için tasarlanmış profesyonel bir masaüstü uygulamasıdır. **React** ve **Electron** ile geliştirilen bu araç, modern "Liquid Glass" arayüzünü; Yapay Zeka nesne tanıma, sesli notlar ve kare-kare gezinme gibi güçlü özelliklerle birleştirir.
 
-## ✨ Özellikler
+**Spor analizi**, **eğitim içerikleri**, **tıbbi araştırmalar** veya **video düzenleme iş akışları** için ideal olan bu araç, video verilerini yerel makinenizde güvenli bir şekilde işaretlemenizi, analiz etmenizi ve dışa aktarmanızı sağlar.
 
-### 🎥 **Video Oynatma ve Kontrol**
+## ✨ Temel Özellikler
 
-- ✅ Yerel video dosya desteği (MP4, WebM, OGG, MOV, AVI, MKV)
-- ✅ YouTube video URL desteği
-- ✅ Oynat/duraklat/durdur kontrolleri
-- ✅ İlerleme takibi ve atlama
-- ✅ Kare-kare navigasyon (+/- 1 kare, 30fps'de)
-- ✅ Yer imi işaretleri ile zaman çizelgesi görselleştirmesi
-- ✅ Hassas zaman gösterimi (SS:DD:SS)
+### 🧠 **Akıllı Analiz & AI**
 
-### ✏️ **Gelişmiş Çizim Araçları**
+- ✅ **AI Nesne Algılama** ("Sihirli Değnek") - Cihaz içi makine öğrenimi (TensorFlow.js) kullanarak video karelerindeki kişi ve nesneleri otomatik olarak bulun.
+- ✅ **Sesli Notlar** - Hızlı geri bildirim için doğrudan zaman çizelgesine sesli notlar kaydedin.
+- ✅ **Sonsuz Tuval** - %500'e kadar Yakınlaştırın ve piksel hassasiyetinde detaylar için serbestçe Kaydırın (Pan).
 
-- ✅ **Kalem** - Serbest çizim
-- ✅ **Silgi** - Açıklamaları kaldır
-- ✅ **Çizgi** - Düz çizgi aracı
-- ✅ **Dikdörtgen** - Dikdörtgen çiz
-- ✅ **Daire** - Daire çiz
-- ✅ **Ok** - Yönlü oklar
-- ✅ **Metin** - Metin açıklamaları ekle
-- ✅ **Damga** - Emoji damgaları (✅ ❌ ❓ ❗ ⭐ 🎯)
-- ✅ Palet ile renk seçici
-- ✅ Ayarlanabilir fırça boyutu (1-20px)
+### 🎥 **Video Kontrolü**
 
-### 📐 **Çoklu Katman Sistemi**
+- ✅ **Evrensel Format Desteği** - MP4, WebM, OGG, MOV, AVI, MKV dosyalarını oynatır.
+- ✅ **YouTube Desteği** - Standart YouTube videolarını yükleyin ve üzerine çizim yapın.
+- ✅ **Kare Hassasiyetinde Gezinme** - Kare kare ileri/geri gidin.
+- ✅ **Görsel Zaman Çizelgesi** - Yer imlerini ve çizimleri zaman çubuğu üzerinde işaretleyici olarak görün.
 
-- ✅ Sınırsız açıklama katmanı oluşturma
-- ✅ Bireysel katman görünürlük değiştirme
-- ✅ Katman opaklık kontrolü (0-100%)
-- ✅ Katmanları kilitleme/kilidi açma
-- ✅ Katmanları yeniden adlandırma
-- ✅ Katman sıralama
-- ✅ Katman başına izole düzenleme
+### ✏️ **Profesyonel Çizim Seti**
 
-### 💾 **Kaydetme ve Dışa Aktarma**
+- ✅ **Vektör Araçlar** - Kalem, Çizgi, Dikdörtgen, Daire, Ok.
+- ✅ **Metin & Damgalar** - Zengin metin etiketleri veya hızlı durum emojileri (✅ ❌ ❓ ❗) ekleyin.
+- ✅ **Stil Özelleştirme** - Tam renk paleti, ayarlanabilir çizgi kalınlığı ve opaklık kontrolü.
+- ✅ **Silgi & Düzenleme** - Herhangi bir çizimi sonradan düzenleyin, taşıyın veya silin.
 
-- ✅ Projeleri IndexedDB'ye kaydet
-- ✅ Kaydedilen projeleri yükle
-- ✅ Otomatik kayıt (yapılandırılabilir aralık)
-- ✅ PNG olarak dışa aktar (video arka planıyla)
-- ✅ SVG olarak dışa aktar (vektör formatı)
-- ✅ JSON olarak dışa aktar (proje verisi)
-- ✅ Yer imlerini CSV olarak dışa aktar
-- ✅ Açıklamaları panoya kopyala
-- ✅ Toplu ekran görüntüsü dışa aktarma
+### 📐 **Katman Yönetimi**
 
-### 📌 **Yer İmleri ve Zaman Çizelgesi**
+- ✅ **Çoklu Katman Sistemi** - Çizimleri sınırsız katmanda organize edin (örn: "Hücum", "Savunma", "Notlar").
+- ✅ **Katman Kontrolleri** - Her katmanı kilitleyin, gizleyin, yeniden adlandırın veya şeffaflığını ayarlayın.
 
-- ✅ Notlarla zaman damgası yer imleri ekle
-- ✅ Otomatik küçük resim yakalama
-- ✅ Belirli zaman damgalarına atla
-- ✅ Yer imi notlarını düzenle
-- ✅ Yer imlerini sil
-- ✅ İşaretlerle görsel zaman çizelgesi
-- ✅ Sıralanmış yer imi listesi
+### 💾 **Kaydetme, Yükleme & Dışa Aktarma**
 
-### ⚙️ **Profesyonel Özellikler**
-
-- ✅ Tam geçmişle Geri Al/Yinele
-- ✅ Klavye kısayolları (tamamen özelleştirilebilir)
-- ✅ Ekran kaydetme yeteneği
-- ✅ Sekmeli ayarlar paneli
-- ✅ Otomatik kayıt yapılandırması
-- ✅ Karanlık tema (Açık tema yakında)
-- ✅ Izgara kaplama seçenekleri
-- ✅ Son dosyalar takibi
-- ✅ Duyarlı kullanıcı arayüzü
-
-### 🖥️ **Çapraz Platform Masaüstü**
-
-- ✅ Yerel macOS uygulaması (DMG, ZIP)
-- ✅ Yerel Windows uygulaması (NSIS yükleyici, Taşınabilir)
-- ✅ Yerel Linux uygulaması (AppImage, DEB, RPM)
-- ✅ Platforma özel pencere kontrolleri
-- ✅ Yerel dosya diyalogları
-- ✅ Güvenli IPC iletişimi
+- ✅ **Proje Sürekliliği** - Projeleri yerel olarak otomatik kaydedin (IndexedDB).
+- ✅ **Dışa Aktarma Seçenekleri** - İşaretlenmiş kareleri **PNG**, çizim verilerini **SVG** veya proje yapısını **JSON** olarak kaydedin.
+- ✅ **Veri Çıktısı** - Yer imlerini ve zaman kodlarını **CSV** formatında dökün.
 
 ## 🚀 Başlangıç
 
 ### Gereksinimler
 
-**Node.js** (v16 veya üstü) ve **npm**'in yüklü olduğundan emin olun:
-
-- **Node.js**: [Node.js İndir & Kur](https://nodejs.org/)
-- **npm**: Node.js ile birlikte gelir
+- **Node.js** (v16+)
+- **npm**
 
 ### Kurulum
-
-1. **Depoyu klonlayın**
 
 ```bash
 git clone https://github.com/Sopwit/video-annotation-tool.git
 cd video-annotation-tool
-```
-
-2. **Bağımlılıkları yükleyin**
-
-```bash
 npm install
 ```
 
-### Geliştirme
-
-Uygulamayı geliştirme modunda çalıştırmak için:
+### Çalıştırma (Geliştirici Modu)
 
 ```bash
 npm run electron:dev
 ```
 
-Bu şunları yapacaktır:
-
-- Vite geliştirme sunucusunu başlat
-- Electron uygulamasını başlat
-- Daha hızlı geliştirme için hot-reload'u etkinleştir
-- Hata ayıklama için DevTools'u aç
-
-### Production için Derleme
-
-#### Mevcut platformunuz için derle
+### Uygulama Olarak Derleme (Build)
 
 ```bash
+# Mevcut işletim sisteminiz için derleyin
 npm run electron:build
-```
 
-#### Belirli platformlar için derle
-
-```bash
-# macOS (DMG ve ZIP)
-npm run electron:build:mac
-
-# Windows (NSIS yükleyici ve taşınabilir)
-npm run electron:build:win
-
-# Linux (AppImage, DEB ve RPM)
-npm run electron:build:linux
-
-# Tüm platformlar için derle
+# Tüm platformlar için derleyin (Mac, Win, Linux)
 npm run electron:build:all
 ```
 
-Derlenmiş uygulamalar `release` klasöründe mevcut olacaktır.
-
-**Not**: Derlemeden önce, `build/` dizinine simge dosyaları ekleyin:
-
-- `icon.icns` (macOS)
-- `icon.ico` (Windows)
-- `icon.png` (Linux - 512x512px)
-
-Ayrıntılar için `build/README.md`'ye bakın.
+Derlenen uygulama, bağımsız bir masaüstü programı olarak çalışacaktır.
 
 ## 📂 Proje Yapısı
 
 ```
 video-annotation-tool/
-├── electron/              # Electron ana süreç
-│   ├── main.cjs          # Ana süreç girişi
-│   └── preload.cjs       # Ön yükleme betiği
-├── src/                  # React uygulaması
-│   ├── store/           # Durum yönetimi
-│   │   └── useStore.js  # Zustand deposu
-│   ├── services/        # İş mantığı
-│   │   ├── database.js      # IndexedDB servisi
-│   │   └── exportService.js # Dışa aktarma araçları
-│   ├── components/      # React bileşenleri
-│   │   ├── VideoPlayer.jsx
-│   │   ├── CanvasOverlay.jsx
-│   │   ├── Toolbar.jsx
-│   │   ├── Sidebar.jsx
-│   │   ├── Timeline.jsx
-│   │   ├── LayerManager.jsx
-│   │   └── SettingsPanel.jsx
-│   ├── hooks/           # Özel hook'lar
-│   │   └── useRecorder.js
-│   ├── App.jsx          # Ana bileşen
-│   └── main.jsx         # Giriş noktası
-├── public/              # Statik varlıklar
-├── build/               # Derleme kaynakları (simgeler)
-└── release/             # Derlenmiş uygulamalar
+├── electron/              # Yerel OS entegrasyonu (Ana Süreç)
+├── src/
+│   ├── components/       # Arayüz Bileşenleri (Toolbar, Timeline, Canvas)
+│   ├── services/         # Mantık (AI, Veritabanı, Export)
+│   ├── store/            # Durum Yönetimi (Zustand)
+│   ├── themes/           # CSS & Tasarım Tokenları
+│   └── App.jsx           # Uygulama Kökü
+├── docs/                 # Detaylı Dokümantasyon
+└── release/              # Üretim Çıktıları
 ```
-
-## 🛠️ Teknolojiler
-
-### Temel Teknolojiler
-
-- [**React 19**](https://react.dev/) - Geliştirilmiş performansa sahip en yeni React
-- [**Electron 34**](https://www.electronjs.org/) - Çapraz platform masaüstü çerçevesi
-- [**Vite 7**](https://vitejs.dev/) - Yeni nesil frontend araçları
-- [**Tailwind CSS 3**](https://tailwindcss.com/) - Utility-first CSS çerçevesi
-
-### Kütüphaneler
-
-- [**Zustand**](https://github.com/pmndrs/zustand) - Durum yönetimi
-- [**Dexie**](https://dexie.org/) - IndexedDB sarmalayıcı
-- [**React Player**](https://www.npmjs.com/package/react-player) - Video oynatma
-- [**Lucide React**](https://lucide.dev/) - Güzel simgeler
-- [**html2canvas**](https://html2canvas.hertzen.com/) - Ekran görüntüsü oluşturma
-- [**file-saver**](https://github.com/eligrey/FileSaver.js/) - Dosya indirme
 
 ## ⌨️ Klavye Kısayolları
 
-### Araçlar
-
-- `P` - Kalem aracı
-- `E` - Silgi
-- `C` - İmleç/Seç modu
-- `T` - Metin aracı
-- `R` - Dikdörtgen
-- `O` - Daire
-- `A` - Ok
-- `S` - Damga
-
-### Eylemler
-
-- `Cmd/Ctrl + Z` - Geri Al
-- `Cmd/Ctrl + Shift + Z` - Yinele
-- `Cmd/Ctrl + Y` - Yinele (alternatif)
-
-**Tüm kısayollar Ayarlar'da özelleştirilebilir!**
-
-## 🎯 Kullanım
-
-1. **Uygulamayı başlatın**
-2. **Video yükleyin**:
-   - Video URL'si eklemek için bağlantı simgesine tıklayın
-   - Veya yerel bir video dosyasını sürükleyip bırakın
-3. **Araç çubuğundan aracınızı seçin**
-4. **Düzenli açıklamalar için katmanlar oluşturun**
-5. **Doğrudan video üzerine açıklamalar çizin**
-6. **Önemli zaman damgalarında yer imleri ekleyin**
-7. **Kare-mükemmel navigasyon için zaman çizelgesini kullanın**
-8. **Projenizi daha sonra kullanmak üzere kaydedin**
-9. **Tercih ettiğiniz formatta dışa aktarın**
-
-## 💡 Kullanım Alanları
-
-### 🎓 Eğitim
-
-- Açıklamalı ders videoları oluştur
-- Önemli kavramları vurgula
-- Açıklayıcı notlar ekle
-- Kare-kare gösterimler
-
-### 🏀 Spor Analizi
-
-- Katmanlarla taktik analiz
-- Oyuncu takibi
-- Hareket kalıpları
-- Performans değerlendirmesi
-
-### 🎬 İçerik Oluşturma
-
-- Düzenleme için video işaretleme
-- Post-prodüksiyon için notlar
-- İşbirliği açıklamaları
-- Hızlı ekran yakalamalar
-
-### 🔬 Araştırma
-
-- Bilimsel video analizi
-- Davranış çalışmaları
-- Veri toplama
-- Hassas ölçümler
-
-## 🔄 v1.6.0 (Next-Gen) Sürümündeki Yenilikler
-
-### 🧠 AI & Akıllı Özellikler
-
-- ✨ **AI Nesne Algılama** ("Sihirli Değnek"): TensorFlow.js kullanarak video karelerindeki nesneleri otomatik olarak algılayın.
-- ✨ **Sesli Notlar**: Doğrudan zaman çizelgesine sesli notlar kaydedin.
-- ✨ **Sonsuz Tuval**: Piksel mükemmelliğinde detayları açıklamak için Yakınlaştırın (%500'e kadar) ve Kaydırın.
-
-### v1.5'ten Önemli Özellikler
-
-- ✨ **Liquid Glass Teması**: Çarpıcı, modern, yarı saydam bir arayüz.
-- ✨ **Çoklu katman açıklama sistemi**
-- ✨ **Kare navigasyonlu gelişmiş zaman çizelgesi**
-- ✨ **Profesyonel katman yönetimi**
-- ✨ **Proje kaydetme/yükleme (IndexedDB)**
-- ✨ **Otomatik kayıt işlevi**
-- ✨ **Çoklu dışa aktarma formatları** (PNG, SVG, JSON, CSV)
-
-Tam ayrıntılar için [CHANGELOG.md](CHANGELOG.md)'ye bakın.
-
-## 🤝 Katkıda Bulunma
-
-Katkılar memnuniyetle karşılanır! Lütfen bir Pull Request göndermekten çekinmeyin.
-
-1. Depoyu fork edin
-2. Özellik dalınızı oluşturun (`git checkout -b feature/HarikaBirOzellik`)
-3. Değişikliklerinizi commit edin (`git commit -m 'Harika bir özellik ekle'`)
-4. Dalı push edin (`git push origin feature/HarikaBirOzellik`)
-5. Bir Pull Request açın
-
-## 📝 Lisans
-
-Bu proje **MIT Lisansı** altında lisanslanmıştır - detaylar için [LICENSE.md](LICENSE.md) dosyasına bakın.
-
-## 🗺️ Yol Haritası
-
-Planlanan özellikler ve gelecek geliştirme için [ROADMAP.md](ROADMAP.md)'ye bakın.
+| Tuş               | Araç/Eylem                      |
+| :---------------- | :------------------------------ |
+| **P**             | Kalem                           |
+| **E**             | Silgi                           |
+| **C**             | İmleç/Seçim                     |
+| **R**             | Dikdörtgen                      |
+| **O**             | Daire                           |
+| **A**             | Ok                              |
+| **T**             | Metin                           |
+| **Ctrl+Z**        | Geri Al                         |
+| **Esc**           | Görünümü Sıfırla / Modalı Kapat |
+| **Shift+Sürükle** | Tuval Kaydırma (Pan)            |
+| **Ctrl+Tekerlek** | Yakınlaştır/Uzaklaştır (Zoom)   |
 
 ## 📚 Dokümantasyon
 
-- [CHANGELOG.md](CHANGELOG.md) - Sürüm geçmişi
-- [ROADMAP.md](ROADMAP.md) - Gelecek planları
-- [IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md) - Geliştirici kılavuzu
-- [build/README.md](build/README.md) - Simge oluşturma kılavuzu
+Daha ayrıntılı bilgi için `docs/` klasörüne bakabilirsiniz:
 
-## 🐛 Bilinen Sorunlar
+- [Geliştirici Uygulama Rehberi](docs/IMPLEMENTATION_GUIDE.md) - Mimari ve kod açıklamaları.
+- [Yol Haritası](docs/ROADMAP.md) - Gelecek planları.
+- [Değişiklik Günlüğü](CHANGELOG.md) - Sürüm geçmişi.
 
-- Açık tema değiştirme mevcut ancak CSS henüz uygulanmadı
-- Katman yeniden sıralama UI'sı mevcut, mantık geliştiriliyor
-- Ayarlarda depolama istatistikleri yer tutucu
+## 🤝 Katkıda Bulunma
 
-Bunlar küçük sorunlardır ve temel işlevselliği etkilemez.
+Katkılarınızı bekliyoruz! Lütfen Pull Request göndermek veya sorun bildirmek için [CONTRIBUTING.md](CONTRIBUTING.md) dosyasına bakın.
 
-## 💬 Destek
+## 📝 Lisans
 
-Herhangi bir sorunla karşılaşırsanız veya sorularınız varsa:
-
-1. [Dokümantasyonu](IMPLEMENTATION_GUIDE.md) kontrol edin
-2. [CHANGELOG.md](CHANGELOG.md)'yi inceleyin
-3. GitHub'da bir issue açın
-
-## 🙏 Teşekkürler
-
-- Tüm katkıda bulunanlara teşekkürler
-- Erişilebilir video açıklama araçlarına duyulan ihtiyaçtan ilham alınmıştır
-- Açık kaynak teknolojiler kullanılarak sevgiyle geliştirilmiştir
-
-## 📧 İletişim
-
-**Sopwit** - [@Sopwit](https://github.com/Sopwit)
-
-**Proje Bağlantısı**: [https://github.com/Sopwit/video-annotation-tool](https://github.com/Sopwit/video-annotation-tool)
+Bu proje **MIT Lisansı** altında lisanslanmıştır. Detaylar için [LICENSE.md](LICENSE.md) dosyasına bakınız.
 
 ---
 
 <div align="center">
 
 **[Sopwit](https://github.com/Sopwit) tarafından ❤️ ile yapıldı**
-
-⭐ Bu depoyu faydalı buluyorsanız yıldızlayın!
 
 </div>
