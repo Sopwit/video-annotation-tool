@@ -283,20 +283,23 @@ video-annotation-tool/
 - Data collection
 - Precise measurements
 
-## 🔄 What's New in v1.2
+## 🔄 What's New in v1.6.0 (Next-Gen)
 
-### Major Features
+### 🧠 AI & Smart Features
 
+- ✨ **AI Object Detection** ("Magic Wand"): Automatically detect objects in video frames using TensorFlow.js.
+- ✨ **Voice Annotations**: Record voice notes directly into the timeline.
+- ✨ **Infinite Canvas**: Zoom (up to 500%) and Pan to annotate details with pixel-perfect precision.
+
+### Major Features from v1.5
+
+- ✨ **Liquid Glass Theme**: A stunning, modern translucent UI.
 - ✨ **Multi-layer annotation system**
 - ✨ **Advanced timeline with frame navigation**
 - ✨ **Professional layer management**
 - ✨ **Save/Load projects (IndexedDB)**
 - ✨ **Auto-save functionality**
 - ✨ **Multiple export formats** (PNG, SVG, JSON, CSV)
-- ✨ **Settings panel** with customization
-- ✨ **Keyboard shortcut customization**
-- ✨ **Line drawing tool**
-- ✨ **Enhanced performance**
 
 See [CHANGELOG.md](CHANGELOG.md) for complete details.
 

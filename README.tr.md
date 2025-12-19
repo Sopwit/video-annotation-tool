@@ -283,20 +283,23 @@ video-annotation-tool/
 - Veri toplama
 - Hassas ölçümler
 
-## 🔄 v1.2'deki Yenilikler
+## 🔄 v1.6.0 (Next-Gen) Sürümündeki Yenilikler
 
-### Önemli Özellikler
+### 🧠 AI & Akıllı Özellikler
 
+- ✨ **AI Nesne Algılama** ("Sihirli Değnek"): TensorFlow.js kullanarak video karelerindeki nesneleri otomatik olarak algılayın.
+- ✨ **Sesli Notlar**: Doğrudan zaman çizelgesine sesli notlar kaydedin.
+- ✨ **Sonsuz Tuval**: Piksel mükemmelliğinde detayları açıklamak için Yakınlaştırın (%500'e kadar) ve Kaydırın.
+
+### v1.5'ten Önemli Özellikler
+
+- ✨ **Liquid Glass Teması**: Çarpıcı, modern, yarı saydam bir arayüz.
 - ✨ **Çoklu katman açıklama sistemi**
 - ✨ **Kare navigasyonlu gelişmiş zaman çizelgesi**
 - ✨ **Profesyonel katman yönetimi**
 - ✨ **Proje kaydetme/yükleme (IndexedDB)**
 - ✨ **Otomatik kayıt işlevi**
 - ✨ **Çoklu dışa aktarma formatları** (PNG, SVG, JSON, CSV)
-- ✨ **Özelleştirme ile ayarlar paneli**
-- ✨ **Klavye kısayolu özelleştirmesi**
-- ✨ **Çizgi çizim aracı**
-- ✨ **Geliştirilmiş performans**
 
 Tam ayrıntılar için [CHANGELOG.md](CHANGELOG.md)'ye bakın.
 
