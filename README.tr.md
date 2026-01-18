@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Sürüm](https://img.shields.io/badge/sürüm-1.6.0-blue.svg)
+![Sürüm](https://img.shields.io/badge/sürüm-1.5.0-blue.svg)
 ![Lisans](https://img.shields.io/badge/lisans-MIT-green.svg)
 ![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey.svg)
 ![Durum](https://img.shields.io/badge/durum-production--ready-success.svg)
