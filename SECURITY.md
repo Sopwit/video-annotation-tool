@@ -1,20 +1,25 @@
-# Security Policy
+# 🛡️ Security Policy
 
-## Supported Versions
+## 📦 Supported Versions
 
-Use this section to tell people about which versions of your project are currently being supported with security updates.
+Please check below to see which versions of Video Annotation Tool are currently supported with security updates.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.5.x   | :white_check_mark: |
-| < 1.4   | :x:                |
+| Version   | Supported | Notes                 |
+| :-------- | :-------- | :-------------------- |
+| **1.5.x** | ✅        | Latest stable release |
+| **1.4.x** | ❌        | End of Life           |
+| < 1.4     | ❌        | End of Life           |
 
-## Reporting a Vulnerability
+## 🐛 Reporting a Vulnerability
 
-We take the security of our software seriously. If you believe you have found a security vulnerability in Video Annotation Tool, please report it to us as described below.
+We take the security of our software seriously. If you believe you have found a security vulnerability in **Video Annotation Tool**, please report it to us immediately.
 
-**Please do not report security vulnerabilities through public GitHub issues.**
+> [!CAUTION]
+> **Please do not report security vulnerabilities through public GitHub issues.**
 
-Instead, please report them via email to [sopwit@osdev.shop](mailto:sopwit@osdev.shop).
+### How to Report
 
-You should receive a response within 48 hours. If for some reason you do not, please follow up via email to ensure we received your original message.
+Please report vulnerabilities via email to **[sopwit@osdev.shop](mailto:sopwit@osdev.shop)**.
+
+- **Response Time**: You should receive a response within **48 hours**.
+- **Process**: We will work with you to validate and verify the vulnerability and disclose a fix as soon as possible.
