@@ -1,19 +1,41 @@
-import '@tensorflow/tfjs';
-import * as cocoSsd from '@tensorflow-models/coco-ssd';
-
 let model = null;
+let modelPromise = null;
 
 /**
  * Loads the COCO-SSD model. Single entry point.
  */
 export const loadModel = async () => {
   if (model) return model;
+  if (modelPromise) return modelPromise;
+
+  modelPromise = (async () => {
+    // Lazy-load only required TFJS modules to avoid pulling the full tfjs bundle.
+    const tf = await import('@tensorflow/tfjs-core');
+    await Promise.all([
+      import('@tensorflow/tfjs-backend-webgl'),
+      import('@tensorflow/tfjs-backend-cpu'),
+      import('@tensorflow/tfjs-converter'),
+    ]);
+
+    // Prefer WebGL backend for speed; fallback to CPU.
+    try {
+      if (tf.getBackend() !== 'webgl') {
+        await tf.setBackend('webgl');
+      }
+    } catch {
+      await tf.setBackend('cpu');
+    }
+    await tf.ready();
+
+    const cocoSsd = await import('@tensorflow-models/coco-ssd');
+    return cocoSsd.load();
+  })();
+
   try {
-    console.log('Loading AI Model...');
-    model = await cocoSsd.load();
-    console.log('AI Model Loaded!');
+    model = await modelPromise;
     return model;
   } catch (error) {
+    modelPromise = null;
     console.error('Failed to load AI model:', error);
     throw error;
   }

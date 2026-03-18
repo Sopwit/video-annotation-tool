@@ -1,8 +1,11 @@
 import Dexie from 'dexie';
 
+export const DATABASE_NAME = 'VideoAnnotationDB';
+export const STORE_PERSIST_KEY = 'video-annotation-storage';
+
 class AnnotationDatabase extends Dexie {
   constructor() {
-    super('VideoAnnotationDB');
+    super(DATABASE_NAME);
     
     this.version(1).stores({
       projects: '++id, name, videoUrl, created, modified',
@@ -23,43 +26,49 @@ const db = new AnnotationDatabase();
 // Project Management
 export const saveProject = async (projectData) => {
   try {
-    const { name, videoUrl, layers, annotations, bookmarks } = projectData;
-    
-    // Save or update project
-    const projectId = await db.projects.put({
-      name,
-      videoUrl,
-      created: projectData.created || new Date().toISOString(),
-      modified: new Date().toISOString(),
+    const { id, name, videoUrl, layers, annotations, bookmarks, layerData } = projectData;
+    const now = new Date().toISOString();
+    const existingProject = id ? await db.projects.get(id) : null;
+
+    return await db.transaction('rw', db.projects, db.annotations, db.layers, db.bookmarks, async () => {
+      // Save or update project metadata
+      const projectId = await db.projects.put({
+        ...(id ? { id } : {}),
+        name,
+        videoUrl,
+        created: existingProject?.created || projectData.created || now,
+        modified: now,
+        layerData: layerData || {},
+      });
+      
+      // Clear existing data for this project
+      await db.annotations.where('projectId').equals(projectId).delete();
+      await db.layers.where('projectId').equals(projectId).delete();
+      await db.bookmarks.where('projectId').equals(projectId).delete();
+      
+      // Save layers
+      if (layers && layers.length > 0) {
+        await db.layers.bulkAdd(
+          layers.map(layer => ({ ...layer, projectId }))
+        );
+      }
+      
+      // Save annotations
+      if (annotations && annotations.length > 0) {
+        await db.annotations.bulkAdd(
+          annotations.map(ann => ({ ...ann, projectId }))
+        );
+      }
+      
+      // Save bookmarks
+      if (bookmarks && bookmarks.length > 0) {
+        await db.bookmarks.bulkAdd(
+          bookmarks.map(bm => ({ ...bm, projectId }))
+        );
+      }
+      
+      return projectId;
     });
-    
-    // Clear existing data for this project
-    await db.annotations.where('projectId').equals(projectId).delete();
-    await db.layers.where('projectId').equals(projectId).delete();
-    await db.bookmarks.where('projectId').equals(projectId).delete();
-    
-    // Save layers
-    if (layers && layers.length > 0) {
-      await db.layers.bulkAdd(
-        layers.map(layer => ({ ...layer, projectId }))
-      );
-    }
-    
-    // Save annotations
-    if (annotations && annotations.length > 0) {
-      await db.annotations.bulkAdd(
-        annotations.map(ann => ({ ...ann, projectId }))
-      );
-    }
-    
-    // Save bookmarks
-    if (bookmarks && bookmarks.length > 0) {
-      await db.bookmarks.bulkAdd(
-        bookmarks.map(bm => ({ ...bm, projectId }))
-      );
-    }
-    
-    return projectId;
   } catch (error) {
     console.error('Error saving project:', error);
     throw error;
@@ -82,6 +91,7 @@ export const loadProject = async (projectId) => {
       layers,
       annotations,
       bookmarks,
+      layerData: project.layerData || {},
     };
   } catch (error) {
     console.error('Error loading project:', error);
@@ -143,7 +153,6 @@ export const scheduleAutoSave = (projectData, delay = 60000) => {
   autoSaveTimeout = setTimeout(async () => {
     try {
       await saveProject(projectData);
-      console.log('Auto-saved project');
     } catch (error) {
       console.error('Auto-save failed:', error);
     }

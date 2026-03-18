@@ -1,17 +1,54 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Save, RotateCcw, Keyboard, Palette, Zap, HardDrive } from 'lucide-react';
 import useStore from '../store/useStore';
+import { clearAllStorage, exportAllData, getStorageEstimate, formatBytes } from '../utils/storageUtils';
+import { getAllProjects } from '../services/database';
 
 const SettingsPanel = ({ isOpen, onClose }) => {
-  const { settings, theme, updateSettings, setTheme, updateShortcut } = useStore();
+  const { settings, theme, updateSettings, setTheme, updateShortcut, addToast } = useStore();
   const [activeTab, setActiveTab] = useState('general');
   const [editingShortcut, setEditingShortcut] = useState(null);
+  const [projectCount, setProjectCount] = useState(0);
+  const [storageStats, setStorageStats] = useState(null);
+  const [storageLoading, setStorageLoading] = useState(false);
   
+  useEffect(() => {
+    if (!isOpen) return;
+
+    let active = true;
+    const fetchStorageData = async () => {
+      setStorageLoading(true);
+      try {
+        const [estimate, projects] = await Promise.all([
+          getStorageEstimate(),
+          getAllProjects(),
+        ]);
+        if (!active) return;
+        setStorageStats(estimate);
+        setProjectCount(projects.length);
+      } catch (error) {
+        console.error('Failed to load storage stats:', error);
+      } finally {
+        if (active) setStorageLoading(false);
+      }
+    };
+
+    fetchStorageData();
+    return () => {
+      active = false;
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
   
   const handleShortcutEdit = (action, event) => {
     event.preventDefault();
     const key = event.key.toLowerCase();
+    const ignoredKeys = ['control', 'shift', 'alt', 'meta', 'escape', 'enter', 'tab'];
+    if (ignoredKeys.includes(key)) {
+      if (key === 'escape') setEditingShortcut(null);
+      return;
+    }
     const modifiers = [];
     
     if (event.ctrlKey || event.metaKey) modifiers.push('mod');
@@ -256,23 +293,50 @@ const SettingsPanel = ({ isOpen, onClose }) => {
                 <div className="p-4 bg-white/5 rounded-lg space-y-3">
                   <div className="flex justify-between text-sm">
                     <span className="text-white/60">Projects Saved</span>
-                    <span className="text-white font-mono">-</span>
+                    <span className="text-white font-mono">{storageLoading ? '...' : projectCount}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-white/60">Storage Used</span>
-                    <span className="text-white font-mono">~ MB</span>
+                    <span className="text-white font-mono">
+                      {storageLoading ? '...' : (storageStats ? formatBytes(storageStats.usage) : 'Unknown')}
+                    </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-white/60">Last Backup</span>
-                    <span className="text-white font-mono">Never</span>
+                    <span className="text-white/60">Storage Quota</span>
+                    <span className="text-white font-mono">
+                      {storageLoading ? '...' : (storageStats ? formatBytes(storageStats.quota) : 'Unknown')}
+                    </span>
                   </div>
                 </div>
                 
                 <div className="space-y-2">
-                  <button className="w-full p-3 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 rounded-lg text-blue-300 font-medium transition-colors">
+                  <button
+                    onClick={async () => {
+                      const ok = await exportAllData();
+                      addToast({
+                        type: ok ? 'success' : 'error',
+                        message: ok ? 'Data exported successfully' : 'Failed to export data',
+                      });
+                    }}
+                    className="w-full p-3 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 rounded-lg text-blue-300 font-medium transition-colors"
+                  >
                     Export All Data
                   </button>
-                  <button className="w-full p-3 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 rounded-lg text-red-300 font-medium transition-colors">
+                  <button
+                    onClick={async () => {
+                      if (!window.confirm('This will clear all local app data. Continue?')) return;
+                      const ok = await clearAllStorage();
+                      addToast({
+                        type: ok ? 'success' : 'error',
+                        message: ok ? 'All local data cleared' : 'Failed to clear local data',
+                      });
+                      if (ok) {
+                        setProjectCount(0);
+                        setStorageStats(await getStorageEstimate());
+                      }
+                    }}
+                    className="w-full p-3 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 rounded-lg text-red-300 font-medium transition-colors"
+                  >
                     Clear All Data
                   </button>
                 </div>

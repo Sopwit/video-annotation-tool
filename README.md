@@ -6,6 +6,7 @@
 ![License](https://img.shields.io/badge/license-MIT-green.svg?style=for-the-badge)
 ![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey.svg?style=for-the-badge)
 ![Status](https://img.shields.io/badge/status-production--ready-success.svg?style=for-the-badge)
+![CI](https://github.com/Sopwit/video-annotation-tool/actions/workflows/ci.yml/badge.svg)
 
 **A professional-grade, cross-platform video analysis suite powered by AI.**
 _Annotate, Analyze, and Export with precision._
@@ -64,8 +65,8 @@ Built with modern, performance-focused technologies:
 
 ### Prerequisites
 
-- **Node.js** (v16 or higher)
-- **npm** (v7 or higher)
+- **Node.js** (v20 or higher)
+- **npm** (v10 or higher recommended)
 
 ### Installation
 
@@ -86,6 +87,17 @@ Run the app in development mode with hot-reload:
 
 ```bash
 npm run electron:dev
+```
+
+### Quality Checks
+
+Run repository quality gates before opening a PR:
+
+```bash
+npm run clean
+npm run lint
+npm run test
+npm run build
 ```
 
 ### Production Build
@@ -111,7 +123,7 @@ video-annotation-tool/
 │   ├── components/  # Reusable UI components
 │   ├── services/    # Business logic (AI, Audio, Export)
 │   ├── store/       # State management (Zustand)
-│   └── theme/       # Design tokens and styles
+│   └── themes/      # Theme styles
 ├── ⚙️ config/        # Environment & App configuration
 └── 📦 release/       # Compiled production builds
 ```
@@ -123,7 +135,7 @@ video-annotation-tool/
 | Action         | Shortcut                                          |
 | :------------- | :------------------------------------------------ |
 | **Tools**      | `P` (Pen), `E` (Eraser), `C` (Cursor), `T` (Text) |
-| **Shapes**     | `R` (Rect), `O` (Circle), `A` (Arrow)             |
+| **Shapes**     | `R` (Rect), `O` (Circle), `A` (Arrow), `L` (Line) |
 | **Navigation** | `Space` (Play/Pause), `Left/Right` (Frame Step)   |
 | **Canvas**     | `Ctrl + Scroll` (Zoom), `Shift + Drag` (Pan)      |
 | **Edit**       | `Ctrl + Z` (Undo), `Del` (Delete Selected)        |

@@ -1,14 +1,14 @@
 # 🗺️ Video Annotation Tool - Project Roadmap
 
-**Last Updated**: December 19, 2025  
-**Project Status**: v1.0.0 - Foundation Complete  
+**Last Updated**: March 18, 2026  
+**Project Status**: v1.5.0 - Production Ready  
 **Vision**: Professional-grade video annotation platform for education, sports analysis, content creation, and research
 
 ---
 
 ## 📊 Current State Analysis
 
-### ✅ Implemented Features (v1.0.0)
+### ✅ Implemented Features (v1.5.0)
 
 #### Core Functionality
 
@@ -37,6 +37,13 @@
 - 💾 **Export Features**:
   - Download annotations as PNG
   - Canvas state history (undo/redo)
+- 💾 **Project Persistence**:
+  - Save/Load projects with IndexedDB (Dexie)
+  - Recent projects list
+  - Auto-save support
+- 🧠 **AI Detection**:
+  - On-demand object detection with COCO-SSD
+  - Lazy-loaded model to reduce startup overhead
 - 🎬 **Screen Recording** - Built-in screen capture with MediaRecorder API
 
 #### Technical Architecture
@@ -59,16 +66,11 @@
 
 ### ⚠️ Current Limitations
 
-1. ❌ No annotation persistence (save/load)
-2. ❌ No multi-layer annotation system
-3. ❌ No frame-by-frame annotations
-4. ❌ Limited export options (only PNG)
-5. ❌ No collaboration features
-6. ❌ No cloud integration
-7. ❌ No AI/ML features
-8. ❌ No video editing capabilities
-9. ❌ Performance issues with long videos
-10. ❌ No mobile support
+1. ⚠️ Annotation data is persisted as layer image snapshots; no vector-level editing history across sessions.
+2. ⚠️ Layer reordering UI exists but ordering behavior is not fully implemented in data model.
+3. ⚠️ No E2E UI test suite yet (unit tests are present).
+4. ⚠️ No collaboration/cloud sync features.
+5. ⚠️ Large production bundles still need additional code-splitting optimization.
 
 ---
 

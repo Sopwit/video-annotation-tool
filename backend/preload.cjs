@@ -1,11 +1,11 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 // Expose protected methods that allow the renderer process to use
-// the ipcRenderer without exposing the entire object
-contextBridge.exposeInMainWorld('electronAPI', {
+// the ipcRenderer without exposing the entire object.
+const electronAPI = Object.freeze({
   // File dialog operations
   openFileDialog: () => ipcRenderer.invoke('dialog:openFile'),
-  saveFileDialog: (options) => ipcRenderer.invoke('dialog:saveFile', options),
+  saveFileDialog: (options = {}) => ipcRenderer.invoke('dialog:saveFile', options),
   
   // File operations
   readFile: (filePath) => ipcRenderer.invoke('file:read', filePath),
@@ -21,3 +21,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
     electron: process.versions.electron,
   },
 });
+
+contextBridge.exposeInMainWorld('electronAPI', electronAPI);

@@ -16,10 +16,21 @@ export default defineConfig({
     },
   },
   build: {
+    sourcemap: false,
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom', 'lodash', 'date-fns', 'dexie', 'react-player'],
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('@tensorflow-models/coco-ssd')) return 'coco-ssd';
+            if (id.includes('@tensorflow/tfjs-core')) return 'tfjs-core';
+            if (id.includes('@tensorflow/tfjs-converter')) return 'tfjs-converter';
+            if (id.includes('@tensorflow/tfjs-backend-webgl')) return 'tfjs-webgl';
+            if (id.includes('@tensorflow/tfjs-backend-cpu')) return 'tfjs-cpu';
+            if (id.includes('@tensorflow/tfjs-layers') || id.includes('@tensorflow/tfjs-data')) return 'tfjs-extra';
+            if (id.includes('react-player')) return 'player';
+            return 'vendor';
+          }
+          return undefined;
         },
       },
     },

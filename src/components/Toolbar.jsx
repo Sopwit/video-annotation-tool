@@ -362,9 +362,12 @@ const Toolbar = ({
                                         
                                         const event = new CustomEvent('addVoiceNote', { detail: { audioUrl } });
                                         window.dispatchEvent(event);
+                                        stream.getTracks().forEach((track) => track.stop());
                                     });
                                     mediaRecorder.start();
                                     setTimeout(() => mediaRecorder.stop(), 5000); // Record for 5 seconds
+                                }).catch(() => {
+                                    window.alert('Microphone access was denied.');
                                 });
                              }
                         }}

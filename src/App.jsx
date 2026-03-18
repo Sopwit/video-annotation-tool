@@ -12,8 +12,9 @@ import StatusBar from './components/StatusBar';
 import KeyboardShortcutsHelp from './components/KeyboardShortcutsHelp';
 import useRecorder from './hooks/useRecorder';
 import useStore from './store/useStore';
-import { saveProject, scheduleAutoSave, cancelAutoSave } from './services/database';
+import { saveProject, loadProject, getAllProjects, scheduleAutoSave, cancelAutoSave } from './services/database';
 import { detectObjects } from './services/aiService';
+import { isShortcutMatch } from './utils/shortcutUtils';
 
 function App() {
   // Zustand Store
@@ -37,6 +38,9 @@ function App() {
     setActiveStamp,
     setDuration,
     setProgress,
+    setLayers,
+    setBookmarks,
+    setCurrentLayer,
     addBookmark,
     updateBookmark,
     deleteBookmark,
@@ -53,6 +57,8 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [showShortcutsHelp, setShowShortcutsHelp] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState(null);
+  const [recentProjects, setRecentProjects] = useState([]);
+  const [pendingLayerData, setPendingLayerData] = useState(null);
   
   // Custom Zoom & Pan State
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -92,6 +98,39 @@ function App() {
     return () => resizeObserver.disconnect();
   }, [isSidebarOpen, showLayerManager, showTimeline]);
 
+  const fetchRecentProjects = useCallback(async () => {
+    const projects = await getAllProjects();
+    return projects
+      .sort((a, b) => new Date(b.modified).getTime() - new Date(a.modified).getTime())
+      .slice(0, 12);
+  }, []);
+
+  const refreshRecentProjects = useCallback(async () => {
+    try {
+      const sorted = await fetchRecentProjects();
+      setRecentProjects(sorted);
+    } catch (error) {
+      console.error('Failed to load recent projects:', error);
+    }
+  }, [fetchRecentProjects]);
+
+  useEffect(() => {
+    let isActive = true;
+    fetchRecentProjects()
+      .then((sorted) => {
+        if (isActive) {
+          setRecentProjects(sorted);
+        }
+      })
+      .catch((error) => {
+        console.error('Failed to load recent projects:', error);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [fetchRecentProjects]);
+
   // Auto-switch to cursor mode for YouTube videos
   useEffect(() => {
     if (isYouTube) {
@@ -129,17 +168,45 @@ function App() {
     }
   }, []);
 
+  const handleSaveProject = useCallback(async () => {
+    try {
+      const layerData = canvasOverlayRef.current?.exportLayerData?.() || {};
+      const projectData = {
+        id: currentProjectId || undefined,
+        name: prompt('Enter project name:', 'My Project') || 'Untitled',
+        videoUrl,
+        layers,
+        annotations: [],
+        layerData,
+        bookmarks,
+      };
+
+      const projectId = await saveProject(projectData);
+      setCurrentProjectId(projectId);
+      refreshRecentProjects();
+      addToast({
+        type: 'success',
+        message: 'Project saved successfully!',
+      });
+    } catch (error) {
+      console.error('Error saving project:', error);
+      addToast({
+        type: 'error',
+        message: 'Failed to save project',
+      });
+    }
+  }, [currentProjectId, videoUrl, layers, bookmarks, addToast, refreshRecentProjects]);
+
   // Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
 
       const shortcut = settings.shortcuts;
       const key = e.key.toLowerCase();
-      const isMod = e.ctrlKey || e.metaKey;
 
       // Keyboard shortcuts help
-      if (key === '?' && !isMod) {
+      if (key === '?' && !e.ctrlKey && !e.metaKey) {
         e.preventDefault();
         setShowShortcutsHelp(true);
         return;
@@ -155,42 +222,46 @@ function App() {
       }
 
       // Undo/Redo
-      if (isMod && key === 'z') {
+      if (isShortcutMatch(e, shortcut.undo || 'mod+z')) {
         e.preventDefault();
-        if (e.shiftKey) {
-          handleRedo();
-        } else {
-          handleUndo();
-        }
+        handleUndo();
         return;
       }
 
-      if (isMod && key === 'y') {
+      if (isShortcutMatch(e, shortcut.redo || 'mod+shift+z') || isShortcutMatch(e, 'mod+y')) {
         e.preventDefault();
         handleRedo();
         return;
       }
 
-      // Tool shortcuts
-      const toolMap = {
-        [shortcut.pen]: 'pen',
-        [shortcut.eraser]: 'eraser',
-        [shortcut.cursor]: 'cursor',
-        [shortcut.text]: 'text',
-        [shortcut.rectangle]: 'rectangle',
-        [shortcut.circle]: 'circle',
-        [shortcut.arrow]: 'arrow',
-        [shortcut.stamp]: 'stamp',
-      };
+      if (isShortcutMatch(e, 'mod+s')) {
+        e.preventDefault();
+        handleSaveProject();
+        return;
+      }
 
-      if (toolMap[key]) {
-        setTool(toolMap[key]);
+      // Tool shortcuts
+      const toolShortcuts = [
+        ['pen', shortcut.pen],
+        ['eraser', shortcut.eraser],
+        ['cursor', shortcut.cursor],
+        ['text', shortcut.text],
+        ['rectangle', shortcut.rectangle],
+        ['circle', shortcut.circle],
+        ['arrow', shortcut.arrow],
+        ['line', shortcut.line || 'l'],
+        ['stamp', shortcut.stamp],
+      ];
+
+      const matchedTool = toolShortcuts.find(([, sc]) => isShortcutMatch(e, sc));
+      if (matchedTool) {
+        setTool(matchedTool[0]);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [settings.shortcuts, setTool, handleUndo, handleRedo]);
+  }, [settings.shortcuts, setTool, handleUndo, handleRedo, handleSaveProject]);
 
   // Auto-save functionality
   useEffect(() => {
@@ -205,6 +276,7 @@ function App() {
       videoUrl,
       layers,
       annotations: [],
+      layerData: canvasOverlayRef.current?.exportLayerData?.() || {},
       bookmarks,
     };
 
@@ -243,11 +315,11 @@ function App() {
 
   const handleStop = useCallback(() => {
     setIsPlaying(false);
-    if (!isYouTube && videoRef.current && videoRef.current.pause) {
-      videoRef.current.pause();
-      videoRef.current.currentTime = 0;
+    if (videoRef.current) {
+      videoRef.current.pause?.();
+      videoRef.current.seekTo?.(0);
     }
-  }, [isYouTube, setIsPlaying]);
+  }, [setIsPlaying]);
 
   const handleClear = useCallback(() => {
     if (confirm('Clear all annotations on current layer?')) {
@@ -365,38 +437,39 @@ function App() {
     }
   }, []);
 
-  const handleSaveProject = useCallback(async () => {
-    try {
-      const projectData = {
-        name: prompt('Enter project name:', 'My Project') || 'Untitled',
-        videoUrl,
-        layers,
-        annotations: [],
-        bookmarks,
-      };
+  const handleOpenRecent = useCallback(async (project) => {
+    if (!project?.id) return;
 
-      const projectId = await saveProject(projectData);
-      setCurrentProjectId(projectId);
+    try {
+      const loaded = await loadProject(project.id);
+      setCurrentProjectId(loaded.id);
+      setVideoUrl(loaded.videoUrl || '');
+      setLayers(loaded.layers?.length ? loaded.layers : [{ id: 0, name: 'Layer 1', visible: true, opacity: 1, locked: false }]);
+      setCurrentLayer(loaded.layers?.[0]?.id ?? 0);
+      setBookmarks(loaded.bookmarks || []);
+      setIsPlaying(false);
+      setPendingLayerData(loaded.layerData || {});
       addToast({
         type: 'success',
-        message: 'Project saved successfully!',
+        message: `Project loaded: ${loaded.name}`,
       });
     } catch (error) {
-      console.error('Error saving project:', error);
+      console.error('Error loading project:', error);
       addToast({
         type: 'error',
-        message: 'Failed to save project',
+        message: 'Failed to load project',
       });
     }
-  }, [videoUrl, layers, bookmarks, addToast]);
+  }, [setVideoUrl, setLayers, setCurrentLayer, setBookmarks, setIsPlaying, addToast]);
 
-  const handleOpenRecent = useCallback((project) => {
-    // TODO: Implement project loading
-    addToast({
-      type: 'info',
-      message: `Opening ${project.name}...`,
-    });
-  }, [addToast]);
+  useEffect(() => {
+    if (!pendingLayerData || !canvasOverlayRef.current || !videoUrl || layers.length === 0) return;
+    const timer = setTimeout(() => {
+      canvasOverlayRef.current?.loadLayerData?.(pendingLayerData);
+      setPendingLayerData(null);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [pendingLayerData, videoUrl, layers]);
 
   // Voice Note Event Listener
   useEffect(() => {
@@ -488,6 +561,7 @@ function App() {
         <WelcomeScreen 
           onLoadVideo={handleLoadVideo}
           onOpenRecent={handleOpenRecent}
+          recentProjects={recentProjects}
         />
         <ToastContainer />
         <KeyboardShortcutsHelp 

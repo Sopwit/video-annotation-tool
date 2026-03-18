@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Trash2, Clock, Play, Search, Edit2, Check, X, Download, FileText, Image as ImageIcon } from 'lucide-react';
 
 const Sidebar = ({ isOpen, bookmarks, onJump, onDelete, onEdit, onClose }) => {
@@ -6,7 +6,17 @@ const Sidebar = ({ isOpen, bookmarks, onJump, onDelete, onEdit, onClose }) => {
     const [editingId, setEditingId] = useState(null);
     const [editValue, setEditValue] = useState('');
     const [audioPlayingId, setAudioPlayingId] = useState(null);
-    const audioRef = React.useRef(new Audio());
+    const audioRef = React.useRef(null);
+
+    useEffect(() => {
+      audioRef.current = new Audio();
+      return () => {
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.src = '';
+        }
+      };
+    }, []);
 
     const formatTime = (seconds) => {
         const date = new Date(seconds * 1000);
@@ -16,9 +26,10 @@ const Sidebar = ({ isOpen, bookmarks, onJump, onDelete, onEdit, onClose }) => {
     };
 
     const playAudio = (bookmark) => {
+      if (!audioRef.current) return;
       if (audioPlayingId === bookmark.id) {
-        audioRef.current.pause();
-        setAudioPlayingId(null);
+          audioRef.current?.pause();
+          setAudioPlayingId(null);
       } else {
         if (bookmark.audioUrl) {
             audioRef.current.src = bookmark.audioUrl;
@@ -29,8 +40,8 @@ const Sidebar = ({ isOpen, bookmarks, onJump, onDelete, onEdit, onClose }) => {
       }
     };
 
-    const filteredBookmarks = bookmarks.filter(b => 
-        b.text.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredBookmarks = bookmarks.filter((b) =>
+        (b.text || b.note || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const startEditing = (bm) => {
@@ -53,6 +64,7 @@ const Sidebar = ({ isOpen, bookmarks, onJump, onDelete, onEdit, onClose }) => {
         link.download = `notes-export-${Date.now()}.json`;
         link.href = url;
         link.click();
+        URL.revokeObjectURL(url);
     };
 
     if (!isOpen) return null;
@@ -111,7 +123,7 @@ const Sidebar = ({ isOpen, bookmarks, onJump, onDelete, onEdit, onClose }) => {
                     </div>
                 ) : (
                     filteredBookmarks.map((bm) => (
-                        <div key={bm.id} className="liquid-card liquid-reflection-hover cursor-pointer">
+                        <div key={bm.id} className="group liquid-card liquid-reflection-hover cursor-pointer">
                             
                             {/* Thumbnail Image (if exists) */}
                             {bm.thumbnail && (

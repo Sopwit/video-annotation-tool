@@ -12,11 +12,17 @@
     "type": "git",
     "url": "https://github.com/Sopwit/video-annotation-tool.git"
   },
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "clean": "bash scripts/clean.sh",
     "build": "vite build",
     "lint": "eslint .",
+    "test": "node --test tests/**/*.test.js",
+    "icons:generate": "bash build/generate-icons.sh",
     "preview": "vite preview",
     "electron:dev": "concurrently \"cross-env NODE_ENV=development npm run dev\" \"wait-on http://localhost:5173 && cross-env NODE_ENV=development electron .\"",
     "electron:build": "npm run build && electron-builder",

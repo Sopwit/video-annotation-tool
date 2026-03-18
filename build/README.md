@@ -26,6 +26,24 @@ For building distributable packages, you need to provide the following icon file
 
 ## Quick Start
 
+### Option 0: Generate Icons Automatically (Recommended)
+
+Use the helper script to generate `icon.png` + `icon.ico` (and `icon.icns` on macOS):
+
+```bash
+./build/generate-icons.sh
+```
+
+You can also pass a custom source image path (relative to project root):
+
+```bash
+./build/generate-icons.sh assets/brand/icon-1024.png
+```
+
+Requirements:
+- `convert` (ImageMagick)
+- `sips` + `iconutil` (only needed for macOS `.icns`)
+
 ### Option 1: Use SVG Icon (Included)
 
 A placeholder SVG icon is available at `public/icon.svg`. You can use online converters to create platform-specific icons:
@@ -102,6 +120,7 @@ After creating icons, test them by:
 ```
 build/
 ├── README.md          # This file
+├── generate-icons.sh  # Icon generation helper script
 ├── icon.icns         # (You need to add) macOS icon
 ├── icon.ico          # (You need to add) Windows icon
 └── icon.png          # (You need to add) Linux icon (512x512)

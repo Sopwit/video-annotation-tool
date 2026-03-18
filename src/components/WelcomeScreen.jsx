@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Video, Upload, FolderOpen, Sparkles, ArrowRight } from 'lucide-react';
 
-const WelcomeScreen = ({ onLoadVideo, onOpenRecent }) => {
+const WelcomeScreen = ({ onLoadVideo, onOpenRecent, recentProjects = [] }) => {
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [urlInput, setUrlInput] = useState('');
   const handleDragOver = (e) => {
@@ -22,11 +22,12 @@ const WelcomeScreen = ({ onLoadVideo, onOpenRecent }) => {
     }
   };
 
-  const recentProjects = [
-    { id: 1, name: 'Tutorial Recording', date: '2 hours ago', thumbnail: null },
-    { id: 2, name: 'Product Demo', date: 'Yesterday', thumbnail: null },
-    { id: 3, name: 'Team Meeting', date: '2 days ago', thumbnail: null },
-  ];
+  const formatRelativeDate = (dateString) => {
+    if (!dateString) return 'Unknown';
+    const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) return 'Unknown';
+    return date.toLocaleString();
+  };
 
   const templates = [
     { id: 1, name: 'Education', icon: '📚', description: 'Perfect for lessons & tutorials' },
@@ -192,9 +193,9 @@ const WelcomeScreen = ({ onLoadVideo, onOpenRecent }) => {
                     <Video className="w-8 h-8 text-white/40" />
                   </div>
                   <h3 className="font-medium text-white mb-1 truncate">
-                    {project.name}
+                    {project.name || 'Untitled Project'}
                   </h3>
-                  <p className="text-xs text-white/40">{project.date}</p>
+                  <p className="text-xs text-white/40">{formatRelativeDate(project.modified || project.created)}</p>
                 </button>
               ))}
             </div>

@@ -47,6 +47,7 @@ const useStore = create(
           rectangle: 'r',
           circle: 'o',
           arrow: 'a',
+          line: 'l',
           stamp: 's',
           undo: 'mod+z',
           redo: 'mod+shift+z',
@@ -67,6 +68,8 @@ const useStore = create(
       setIsPlaying: (playing) => set({ isPlaying: playing }),
       setDuration: (duration) => set({ duration }),
       setProgress: (progress) => set({ progress }),
+      setLayers: (layers) => set({ layers }),
+      setBookmarks: (bookmarks) => set({ bookmarks }),
       
       setTool: (tool) => set({ tool }),
       setColor: (color) => set({ color }),
@@ -88,14 +91,36 @@ const useStore = create(
         };
       }),
       
-      removeLayer: (layerId) => set((state) => ({
-        layers: state.layers.filter(l => l.id !== layerId),
-        currentLayer: state.layers[0]?.id || 0
-      })),
+      removeLayer: (layerId) => set((state) => {
+        const nextLayers = state.layers.filter((l) => l.id !== layerId);
+        const nextCurrentLayer = nextLayers.find((l) => l.id === state.currentLayer)
+          ? state.currentLayer
+          : (nextLayers[0]?.id || 0);
+        return {
+          layers: nextLayers,
+          currentLayer: nextCurrentLayer,
+        };
+      }),
       
       updateLayer: (layerId, updates) => set((state) => ({
         layers: state.layers.map(l => l.id === layerId ? { ...l, ...updates } : l)
       })),
+
+      reorderLayers: (fromIndex, toIndex) => set((state) => {
+        if (
+          fromIndex < 0 ||
+          toIndex < 0 ||
+          fromIndex >= state.layers.length ||
+          toIndex >= state.layers.length
+        ) {
+          return state;
+        }
+
+        const nextLayers = [...state.layers];
+        const [moved] = nextLayers.splice(fromIndex, 1);
+        nextLayers.splice(toIndex, 0, moved);
+        return { layers: nextLayers };
+      }),
       
       setCurrentLayer: (layerId) => set({ currentLayer: layerId }),
       

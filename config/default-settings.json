@@ -1,9 +1,22 @@
 {
+  "version": "1.5.0",
   "theme": "dark",
   "autoSave": true,
   "autoSaveInterval": 60000,
+  "showTooltips": true,
+  "showGrid": false,
+  "snapToGrid": false,
   "shortcuts": {
     "pen": "p",
-    "eraser": "e"
+    "eraser": "e",
+    "cursor": "c",
+    "text": "t",
+    "rectangle": "r",
+    "circle": "o",
+    "arrow": "a",
+    "line": "l",
+    "stamp": "s",
+    "undo": "mod+z",
+    "redo": "mod+shift+z"
   }
 }

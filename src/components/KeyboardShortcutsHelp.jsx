@@ -18,6 +18,7 @@ const KeyboardShortcutsHelp = ({ isOpen, onClose }) => {
         { key: settings.shortcuts.rectangle, description: 'Rectangle tool' },
         { key: settings.shortcuts.circle, description: 'Circle tool' },
         { key: settings.shortcuts.arrow, description: 'Arrow tool' },
+        { key: settings.shortcuts.line || 'l', description: 'Line tool' },
         { key: settings.shortcuts.stamp, description: 'Stamp tool' },
       ],
     },

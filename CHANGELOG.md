@@ -9,7 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Planned for v2.0 (Q1 2026)
+### Changed
+
+- Improved security hardening in Electron IPC path handling and file access flow.
+- Added CI/repository automation updates (`workflow_dispatch`, concurrency, Dependabot grouping).
+- Added build icon generation helper script and supporting documentation.
+- Added shortcut utility tests and storage utility tests.
+- Updated roadmap/implementation docs and configuration defaults for v1.5.0 baseline.
+- Updated web metadata assets (`site.webmanifest`, `robots.txt`, manifest link).
+
+### Planned for v2.0
 
 - Advanced drawing tools (highlighter, blur, polygon)
 - Annotation templates and presets
@@ -19,7 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Command palette (Cmd+K)
 - Plugin system
 
-See [ROADMAP.md](ROADMAP.md) for detailed feature planning.
+See [docs/ROADMAP.md](docs/ROADMAP.md) for detailed feature planning.
 
 ---
 

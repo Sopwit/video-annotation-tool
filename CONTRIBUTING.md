@@ -10,6 +10,11 @@ This project and everyone participating in it is governed by the [Code of Conduc
 
 ## 🛠️ How Can I Contribute?
 
+### Local Prerequisites
+
+- Node.js 20+
+- npm 10+ (recommended)
+
 ### 🐛 Reporting Bugs
 
 - **Ensure the bug was not already reported** by searching on GitHub under [Issues](https://github.com/Sopwit/video-annotation-tool/issues).
@@ -26,8 +31,11 @@ This project and everyone participating in it is governed by the [Code of Conduc
 1. **Fork** the repo and create your branch from `main`.
 2. If you've added code that should be tested, **add tests**.
 3. If you've changed APIs, **update the documentation**.
-4. Ensure the **test suite passes**.
-5. Make sure your code **lints** (ESLint).
+4. Ensure the quality checks pass:
+   - `npm run lint`
+   - `npm run test`
+   - `npm run build`
+5. Make sure your code follows the existing ESLint rules.
 6. Issue that pull request!
 
 ---
@@ -43,7 +51,7 @@ This project and everyone participating in it is governed by the [Code of Conduc
 
 ### JavaScript/React Styleguide
 
-- All code must adhere to **[Standard JS](https://standardjs.com/)**.
+- All code must adhere to the project's **ESLint configuration**.
 - Use **Functional Components** and **Hooks** for React.
 - Prefer `const` over `let`. Avoid `var`.
 

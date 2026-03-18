@@ -42,7 +42,8 @@ const VideoPlayer = forwardRef(({ videoUrl, isPlaying, onProgress, onDuration },
                         setSimulatedTime(time); // Sync timer
                     }
                 },
-                getCurrentTime: () => simulatedTime // Return our timer
+                getCurrentTime: () => simulatedTime, // Return our timer
+                getInternalPlayer: () => iframeRef.current
             };
         }
         
@@ -54,6 +55,7 @@ const VideoPlayer = forwardRef(({ videoUrl, isPlaying, onProgress, onDuration },
                 if (videoRef.current) videoRef.current.currentTime = time;
             },
             getCurrentTime: () => videoRef.current ? videoRef.current.currentTime : 0,
+            getInternalPlayer: () => videoRef.current,
             videoElement: videoRef.current
         };
     }, [isYouTube, simulatedTime]);

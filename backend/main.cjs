@@ -1,11 +1,17 @@
 const { app, BrowserWindow, ipcMain, dialog } = require("electron");
 const path = require("path");
 const fs = require("fs");
+const fsp = require("fs/promises");
 
 let mainWindow;
+const approvedReadPaths = new Set();
+const approvedWritePaths = new Set();
+const MAX_READ_FILE_SIZE_BYTES = 1024 * 1024 * 1024; // 1GB
 
 // Development mode check
 const isDev = process.env.NODE_ENV === "development" || !app.isPackaged;
+
+const normalizePath = (filePath) => path.resolve(String(filePath || ""));
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -33,7 +39,11 @@ function createWindow() {
     mainWindow.loadFile(path.join(__dirname, "../dist/index.html"));
   }
 
+  mainWindow.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
+
   mainWindow.on("closed", () => {
+    approvedReadPaths.clear();
+    approvedWritePaths.clear();
     mainWindow = null;
   });
 }
@@ -69,18 +79,28 @@ ipcMain.handle("dialog:openFile", async () => {
   });
 
   if (!result.canceled && result.filePaths.length > 0) {
-    return result.filePaths[0];
+    const selectedPath = normalizePath(result.filePaths[0]);
+    approvedReadPaths.add(selectedPath);
+    return selectedPath;
   }
   return null;
 });
 
 ipcMain.handle("file:read", async (event, filePath) => {
   try {
-    const data = fs.readFileSync(filePath);
+    const resolvedPath = normalizePath(filePath);
+    if (!approvedReadPaths.has(resolvedPath)) {
+      throw new Error("File path is not approved");
+    }
+    const stat = await fsp.stat(resolvedPath);
+    if (stat.size > MAX_READ_FILE_SIZE_BYTES) {
+      throw new Error("File is too large to read");
+    }
+    const data = await fsp.readFile(resolvedPath);
     return {
       success: true,
       data: data.toString("base64"),
-      path: filePath,
+      path: resolvedPath,
     };
   } catch (error) {
     return {
@@ -91,8 +111,9 @@ ipcMain.handle("file:read", async (event, filePath) => {
 });
 
 ipcMain.handle("dialog:saveFile", async (event, options) => {
+  const normalizedOptions = options && typeof options === "object" ? options : {};
   const result = await dialog.showSaveDialog(mainWindow, {
-    defaultPath: options.defaultPath || "annotations.json",
+    defaultPath: normalizedOptions.defaultPath || "annotations.json",
     filters: [
       { name: "JSON Files", extensions: ["json"] },
       { name: "All Files", extensions: ["*"] },
@@ -100,14 +121,20 @@ ipcMain.handle("dialog:saveFile", async (event, options) => {
   });
 
   if (!result.canceled && result.filePath) {
-    return result.filePath;
+    const selectedPath = normalizePath(result.filePath);
+    approvedWritePaths.add(selectedPath);
+    return selectedPath;
   }
   return null;
 });
 
 ipcMain.handle("file:write", async (event, filePath, content) => {
   try {
-    fs.writeFileSync(filePath, content);
+    const resolvedPath = normalizePath(filePath);
+    if (!approvedWritePaths.has(resolvedPath)) {
+      throw new Error("File path is not approved");
+    }
+    await fsp.writeFile(resolvedPath, content);
     return { success: true };
   } catch (error) {
     return { success: false, error: error.message };

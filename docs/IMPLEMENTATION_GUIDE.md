@@ -1,14 +1,15 @@
-# 🚀 Video Annotation Tool v1.2 - Major Upgrade Complete!
+# 🚀 Video Annotation Tool - Implementation Guide
 
-**Upgrade Date**: December 19, 2025  
-**Version**: 1.0.0 → 1.2.0  
-**Status**: ✅ Implementation Complete
+**Last Updated**: March 18, 2026  
+**Current Version**: 1.5.0  
+**Status**: ✅ Active reference (historical + current notes)
 
 ---
 
 ## 📊 What We've Built
 
-This is a MAJOR upgrade that takes the project from v1.0 to v1.2, implementing ALL feasible features from the roadmap!
+This document started as the v1.2 rollout guide and now serves as a living implementation reference.
+Some sections below are historical context; the latest source of truth is the current codebase and README.
 
 ### 🆕 NEW Technologies Added
 
@@ -178,9 +179,9 @@ src/
 
 ---
 
-## 🔄 Components That Need Updating
+## 🔄 Historical Notes (v1.2 Rollout)
 
-### Required Updates:
+### Required Updates at that time:
 
 1. **App.jsx** - Integrate Zustand store
 2. **CanvasOverlay.jsx** -Add layer support
@@ -189,7 +190,7 @@ src/
 
 ---
 
-## 📝 Next Steps (Implementation Guide)
+## 📝 Current Next Steps
 
 ### Step 1: Update App.jsx
 

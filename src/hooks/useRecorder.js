@@ -4,6 +4,7 @@ const useRecorder = () => {
     const [isRecording, setIsRecording] = useState(false);
     const mediaRecorderRef = useRef(null);
     const chunksRef = useRef([]);
+    const activeStreamRef = useRef(null);
 
     const startRecording = useCallback(async (stream) => {
         if (!stream) {
@@ -12,8 +13,18 @@ const useRecorder = () => {
         }
 
         try {
-            const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
+            const mimeTypes = [
+                'video/webm;codecs=vp9,opus',
+                'video/webm;codecs=vp8,opus',
+                'video/webm',
+            ];
+
+            const supportedMimeType = mimeTypes.find((type) => MediaRecorder.isTypeSupported(type));
+            const mediaRecorder = supportedMimeType
+                ? new MediaRecorder(stream, { mimeType: supportedMimeType })
+                : new MediaRecorder(stream);
             mediaRecorderRef.current = mediaRecorder;
+            activeStreamRef.current = stream;
             chunksRef.current = [];
 
             mediaRecorder.ondataavailable = (e) => {
@@ -40,6 +51,8 @@ const useRecorder = () => {
             mediaRecorder.onstop = () => {
                 const blob = new Blob(chunksRef.current, { type: 'video/webm' });
                 setIsRecording(false);
+                activeStreamRef.current?.getTracks().forEach((track) => track.stop());
+                activeStreamRef.current = null;
                 resolve(blob);
             };
 

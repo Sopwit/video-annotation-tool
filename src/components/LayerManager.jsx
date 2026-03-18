@@ -3,7 +3,7 @@ import { Plus, Trash2, Eye, EyeOff, Lock, Unlock, ChevronUp, ChevronDown } from 
 import useStore from '../store/useStore';
 
 const LayerManager = () => {
-  const { layers, currentLayer, addLayer, removeLayer, updateLayer, setCurrentLayer } = useStore();
+  const { layers, currentLayer, addLayer, removeLayer, updateLayer, setCurrentLayer, reorderLayers } = useStore();
   const [editingId, setEditingId] = useState(null);
   const [editName, setEditName] = useState('');
   
@@ -43,8 +43,7 @@ const LayerManager = () => {
   };
   
   const moveLayer = (fromIndex, toIndex) => {
-    // This would require additional store logic
-    console.log('Move layer from', fromIndex, 'to', toIndex);
+    reorderLayers(fromIndex, toIndex);
   };
   
   return (

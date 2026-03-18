@@ -1,3 +1,5 @@
+import { DATABASE_NAME, STORE_PERSIST_KEY } from '../services/database.js';
+
 /**
  * Storage utilities for calculating IndexedDB usage
  */
@@ -30,21 +32,16 @@ export const formatBytes = (bytes, decimals = 2) => {
 
 export const clearAllStorage = async () => {
   try {
-    // Clear localStorage
-    localStorage.clear();
+    // Clear app-local localStorage key only
+    localStorage.removeItem(STORE_PERSIST_KEY);
     
-    // Clear IndexedDB
+    // Clear app IndexedDB only
     if ('indexedDB' in window) {
-      const databases = await indexedDB.databases();
-      await Promise.all(
-        databases.map(db => {
-          return new Promise((resolve, reject) => {
-            const request = indexedDB.deleteDatabase(db.name);
-            request.onsuccess = () => resolve();
-            request.onerror = () => reject(request.error);
-          });
-        })
-      );
+      await new Promise((resolve, reject) => {
+        const request = indexedDB.deleteDatabase(DATABASE_NAME);
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+      });
     }
     
     return true;
@@ -56,11 +53,25 @@ export const clearAllStorage = async () => {
 
 export const exportAllData = async () => {
   try {
+    const persistedRaw = localStorage.getItem(STORE_PERSIST_KEY);
+    let persistedState = null;
+    if (persistedRaw) {
+      try {
+        persistedState = JSON.parse(persistedRaw);
+      } catch {
+        persistedState = persistedRaw;
+      }
+    }
+
     const data = {
-      version: '1.2.0',
+      version: '1.5.0',
       exportDate: new Date().toISOString(),
-      localStorage: { ...localStorage },
-      // IndexedDB data would be added here if needed
+      localStorage: {
+        [STORE_PERSIST_KEY]: persistedState,
+      },
+      indexedDB: {
+        database: DATABASE_NAME,
+      },
     };
     
     const dataStr = JSON.stringify(data, null, 2);

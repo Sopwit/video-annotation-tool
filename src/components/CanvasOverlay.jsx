@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState, useImperativeHandle, forwardRef, us
 
 const CanvasOverlay = forwardRef(
   ({ width, height, tool, color, brushSize, clearTrigger, isYouTube, activeStamp, videoUrl, currentLayer, layers }, ref) => {
+    const MAX_HISTORY_STEPS = 30;
     const canvasRefs = useRef({});
     const [isDrawing, setIsDrawing] = useState(false);
     const [startPos, setStartPos] = useState({ x: 0, y: 0 });
@@ -15,6 +16,41 @@ const CanvasOverlay = forwardRef(
       const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
       return match ? match[1] : null;
     };
+
+    const exportLayerData = useCallback(() => {
+      const output = {};
+      layers.forEach((layer) => {
+        const canvas = canvasRefs.current[layer.id];
+        if (canvas && canvas.width > 0 && canvas.height > 0) {
+          output[layer.id] = canvas.toDataURL('image/png');
+        }
+      });
+      return output;
+    }, [layers]);
+
+    const loadLayerData = useCallback(async (layerData) => {
+      if (!layerData || typeof layerData !== 'object') return;
+
+      const drawTasks = Object.entries(layerData).map(([layerId, dataUrl]) => {
+        if (!dataUrl) return Promise.resolve();
+        const canvas = canvasRefs.current[Number(layerId)];
+        if (!canvas) return Promise.resolve();
+
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => {
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            resolve();
+          };
+          img.onerror = () => resolve();
+          img.src = dataUrl;
+        });
+      });
+
+      await Promise.all(drawTasks);
+    }, []);
 
     const captureFrame = async (targetWidth, targetHeight) => {
       const tempCanvas = document.createElement('canvas');
@@ -95,13 +131,29 @@ const CanvasOverlay = forwardRef(
     // Initialize canvases for all layers
     useEffect(() => {
       layers.forEach((layer) => {
-        if (canvasRefs.current[layer.id]) {
-          const canvas = canvasRefs.current[layer.id];
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.lineCap = 'round';
-          ctx.lineJoin = 'round';
+        const canvas = canvasRefs.current[layer.id];
+        if (!canvas) return;
+
+        const prevWidth = canvas.width;
+        const prevHeight = canvas.height;
+        const sizeChanged = prevWidth !== width || prevHeight !== height;
+
+        let buffer = null;
+        if (sizeChanged && prevWidth > 0 && prevHeight > 0) {
+          buffer = document.createElement('canvas');
+          buffer.width = prevWidth;
+          buffer.height = prevHeight;
+          buffer.getContext('2d').drawImage(canvas, 0, 0);
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        if (buffer) {
+          ctx.drawImage(buffer, 0, 0, prevWidth, prevHeight, 0, 0, width, height);
         }
       });
     }, [width, height, layers]);
@@ -142,8 +194,12 @@ const CanvasOverlay = forwardRef(
 
       const newHistory = history.slice(0, historyStep + 1);
       newHistory.push(layersData);
-      setHistory(newHistory);
-      setHistoryStep(newHistory.length - 1);
+      const trimmedHistory =
+        newHistory.length > MAX_HISTORY_STEPS
+          ? newHistory.slice(newHistory.length - MAX_HISTORY_STEPS)
+          : newHistory;
+      setHistory(trimmedHistory);
+      setHistoryStep(trimmedHistory.length - 1);
     };
 
     const getPos = (e) => {
@@ -345,11 +401,15 @@ const CanvasOverlay = forwardRef(
         
         saveState();
       },
+      exportLayerData: () => exportLayerData(),
+      loadLayerData: async (layerData) => {
+        await loadLayerData(layerData);
+      },
     }));
 
     return (
       <>
-        {layers.map((layer) => (
+        {layers.map((layer, layerIndex) => (
           <canvas
             key={layer.id}
             ref={(el) => {
@@ -363,7 +423,7 @@ const CanvasOverlay = forwardRef(
             style={{
               width,
               height,
-              zIndex: 20 + layer.id,
+              zIndex: 20 + layerIndex,
               position: 'absolute',
               top: 0,
               left: 0,

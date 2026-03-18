@@ -4,8 +4,9 @@
     "paths": {
       "@/*": ["src/*"]
     },
-    "jsx": "react"
+    "jsx": "react-jsx",
+    "checkJs": false
   },
-  "include": ["src", "vite.config.js"],
+  "include": ["src", "tests", "vite.config.js"],
   "exclude": ["node_modules"]
 }

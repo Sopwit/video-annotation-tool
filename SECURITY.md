@@ -1,11 +1,14 @@
 # 🛡️ Security Policy
 
+**Last Updated**: March 18, 2026
+
 ## 📦 Supported Versions
 
 Please check below to see which versions of Video Annotation Tool are currently supported with security updates.
 
 | Version   | Supported | Notes                 |
 | :-------- | :-------- | :-------------------- |
+| `main`    | ✅        | Active development    |
 | **1.5.x** | ✅        | Latest stable release |
 | **1.4.x** | ❌        | End of Life           |
 | < 1.4     | ❌        | End of Life           |
