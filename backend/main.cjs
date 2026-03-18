@@ -10,6 +10,7 @@ const MAX_READ_FILE_SIZE_BYTES = 1024 * 1024 * 1024; // 1GB
 
 // Development mode check
 const isDev = process.env.NODE_ENV === "development" || !app.isPackaged;
+const shouldOpenDevTools = process.env.OPEN_DEVTOOLS === "true";
 
 const normalizePath = (filePath) => path.resolve(String(filePath || ""));
 
@@ -34,12 +35,24 @@ function createWindow() {
   // Load the app
   if (isDev) {
     mainWindow.loadURL("http://localhost:5173");
-    mainWindow.webContents.openDevTools();
+    if (shouldOpenDevTools) {
+      mainWindow.webContents.openDevTools({ mode: "detach" });
+    }
   } else {
     mainWindow.loadFile(path.join(__dirname, "../dist/index.html"));
   }
 
   mainWindow.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
+  mainWindow.webContents.on("console-message", (event, level, message, line, sourceId) => {
+    const isKnownDevToolsAutofillNoise =
+      sourceId.startsWith("devtools://") &&
+      message.includes("Autofill.") &&
+      message.includes("wasn't found");
+
+    if (isKnownDevToolsAutofillNoise) {
+      event.preventDefault();
+    }
+  });
 
   mainWindow.on("closed", () => {
     approvedReadPaths.clear();

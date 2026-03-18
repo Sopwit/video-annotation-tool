@@ -17,7 +17,7 @@
   },
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --port 5173 --strictPort",
     "clean": "bash scripts/clean.sh",
     "build": "vite build",
     "lint": "eslint .",
