@@ -22,7 +22,7 @@ We take the security of our software seriously. If you believe you have found a 
 
 ### How to Report
 
-Please report vulnerabilities via email to **[sopwit@osdev.shop](mailto:sopwit@osdev.shop)**.
+Please report vulnerabilities via email to **[sopwith.osdev@gmail.com](mailto:sopwith.osdev@gmail.com)**.
 
 - **Response Time**: You should receive a response within **48 hours**.
 - **Process**: We will work with you to validate and verify the vulnerability and disclose a fix as soon as possible.

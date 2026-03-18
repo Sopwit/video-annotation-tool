@@ -4,7 +4,7 @@ First off, thank you for considering contributing to Video Annotation Tool! It's
 
 ## 📜 Code of Conduct
 
-This project and everyone participating in it is governed by the [Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to [sopwit@osdev.shop](mailto:sopwit@osdev.shop).
+This project and everyone participating in it is governed by the [Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to [sopwith.osdev@gmail.com](mailto:sopwith.osdev@gmail.com).
 
 ---
 

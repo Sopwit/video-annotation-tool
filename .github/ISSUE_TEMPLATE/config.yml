@@ -1,7 +1,7 @@
 blank_issues_enabled: false
 contact_links:
   - name: Security Reports
-    url: mailto:sopwit@osdev.shop
+    url: mailto:sopwith.osdev@gmail.com
     about: Please report security vulnerabilities privately by email.
   - name: Discussions
     url: https://github.com/Sopwit/video-annotation-tool/discussions
