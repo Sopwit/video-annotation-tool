@@ -132,13 +132,19 @@ video-annotation-tool/
 
 ## ⌨️ Keyboard Shortcuts
 
-| Action         | Shortcut                                          |
-| :------------- | :------------------------------------------------ |
-| **Tools**      | `P` (Pen), `E` (Eraser), `C` (Cursor), `T` (Text) |
-| **Shapes**     | `R` (Rect), `O` (Circle), `A` (Arrow), `L` (Line) |
-| **Navigation** | `Space` (Play/Pause), `Left/Right` (Frame Step)   |
-| **Canvas**     | `Ctrl + Scroll` (Zoom), `Shift + Drag` (Pan)      |
-| **Edit**       | `Ctrl + Z` (Undo), `Del` (Delete Selected)        |
+| Category | Shortcut | Description |
+| :--- | :--- | :--- |
+| **Tools** | `P` / `E` / `C` / `T` / `S` | Pen, Eraser, Cursor, Text, Stamp |
+| **Shapes** | `R` / `O` / `A` / `L` | Rectangle, Circle, Arrow, Line |
+| **Playback** | `Space` | Play / Pause |
+| **Navigation** | `Left` / `Right` | Frame Step Back / Forward (1/30s) |
+| **Seek** | `Shift + Left` / `Shift + Right` | Seek -1s / +1s |
+| **Timeline** | `Home` / `End` | Jump to Start / End |
+| **Pan & Zoom** | `Ctrl + Scroll` / `Shift + Drag` | Canvas Zoom (up to 500%) / Pan View |
+| **Edit** | `Ctrl/Cmd + Z` / `Ctrl/Cmd + Shift + Z` | Undo / Redo |
+| **Project** | `Ctrl/Cmd + S` / `Ctrl/Cmd + E` | Save Project / Export PNG Snapshot |
+| **Panels** | `Ctrl/Cmd + B` / `Ctrl/Cmd + L` / `Ctrl/Cmd + T` | Toggle Bookmarks / Layers / Timeline |
+| **Settings & Help** | `Ctrl/Cmd + ,` / `?` / `Esc` | Settings / Shortcut Help / Reset View |
 
 ---
 

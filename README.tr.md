@@ -58,8 +58,8 @@
 
 ### Gereksinimler
 
-- **Node.js** (v16+)
-- **npm**
+- **Node.js** (v20 veya üzeri)
+- **npm** (v10 veya üzeri)
 
 ### Kurulum
 
@@ -73,6 +73,15 @@ npm install
 
 ```bash
 npm run electron:dev
+```
+
+### Kalite Kontrolleri
+
+```bash
+npm run clean
+npm run lint
+npm run test
+npm run build
 ```
 
 ### Uygulama Olarak Derleme (Build)
@@ -91,37 +100,38 @@ Derlenen uygulama, bağımsız bir masaüstü programı olarak çalışacaktır.
 
 ```
 video-annotation-tool/
-├── backend/             # Electron ana süreci (eski adıyla electron/)
+├── backend/             # Electron ana süreci & IPC işleyicileri
 │   ├── main.cjs
 │   └── preload.cjs
 ├── src/                 # React uygulaması
-│   ├── components/
-│   ├── services/
-│   ├── store/
-│   ├── themes/
+│   ├── components/      # Yeniden kullanılabilir UI bileşenleri
+│   ├── services/        # İş mantığı (AI, Veritabanı, Dışa Aktarma)
+│   ├── store/           # Zustand durum yönetimi
+│   ├── themes/          # Tema stilleri (Liquid Glass, Light, Dark)
+│   ├── utils/           # Yardımcı fonksiyonlar
 │   └── App.jsx
 ├── config/              # Yapılandırma dosyaları
 ├── scripts/             # Derleme ve bakım betikleri
-├── tests/               # Birim ve E2E testleri
+├── tests/               # Birim testleri
 ├── docs/                # Dokümantasyon
 └── release/             # Üretim Çıktıları
 ```
 
 ## ⌨️ Klavye Kısayolları
 
-| Tuş               | Araç/Eylem                      |
-| :---------------- | :------------------------------ |
-| **P**             | Kalem                           |
-| **E**             | Silgi                           |
-| **C**             | İmleç/Seçim                     |
-| **R**             | Dikdörtgen                      |
-| **O**             | Daire                           |
-| **A**             | Ok                              |
-| **T**             | Metin                           |
-| **Ctrl+Z**        | Geri Al                         |
-| **Esc**           | Görünümü Sıfırla / Modalı Kapat |
-| **Shift+Sürükle** | Tuval Kaydırma (Pan)            |
-| **Ctrl+Tekerlek** | Yakınlaştır/Uzaklaştır (Zoom)   |
+| Kategori | Kısayol | Açıklama |
+| :--- | :--- | :--- |
+| **Araçlar** | `P` / `E` / `C` / `T` / `S` | Kalem, Silgi, İmleç, Metin, Damga |
+| **Şekiller** | `R` / `O` / `A` / `L` | Dikdörtgen, Daire, Ok, Çizgi |
+| **Oynatma** | `Space` | Oynat / Duraklat |
+| **Kare Gezinme** | `Sol Ok` / `Sağ Ok` | Kare Kare Geri / İleri (1/30sn) |
+| **Saniye Atlama** | `Shift + Sol` / `Shift + Sağ` | -1sn / +1sn Atlama |
+| **Zaman Çizelgesi** | `Home` / `End` | Başlangıca / Sona Git |
+| **Yakınlaştırma & Kaydırma** | `Ctrl + Tekerlek` / `Shift + Sürükle` | Tuval Yakınlaştırma (%500) / Pan |
+| **Düzenleme** | `Ctrl/Cmd + Z` / `Ctrl/Cmd + Shift + Z` | Geri Al / İleri Al |
+| **Proje & Dışa Aktar** | `Ctrl/Cmd + S` / `Ctrl/Cmd + E` | Projeyi Kaydet / PNG Dışa Aktar |
+| **Paneller** | `Ctrl/Cmd + B` / `Ctrl/Cmd + L` / `Ctrl/Cmd + T` | Notlar / Katmanlar / Zaman Çizelgesi |
+| **Ayarlar & Yardım** | `Ctrl/Cmd + ,` / `?` / `Esc` | Ayarlar / Kısayol Yardımı / Görünümü Sıfırla |
 
 ## 📚 Dokümantasyon
 

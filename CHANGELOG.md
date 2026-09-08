@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed & Optimized
+
+- **Canvas Coordinate Engine**: Fixed zoom/pan coordinate transformation scaling in `CanvasOverlay.jsx` for pixel-perfect drawing accuracy across all zoom levels up to 500%.
+- **Synchronous Drawing State**: Migrated transient drawing state and snapshots from asynchronous React state to refs (`snapshotRef`, `isDrawingRef`, `startPosRef`) eliminating shape tearing, smudge artifacts, and unnecessary re-renders during high-frequency mouse movements.
+- **Keyboard Shortcuts Engine**: Implemented full set of documented shortcuts in `App.jsx` (Space for Play/Pause, Frame stepping with Left/Right arrows, 1s seeking with Shift+Arrows, Home/End, `Ctrl+B`/`Ctrl+L`/`Ctrl+T`/`Ctrl+S`/`Ctrl+E`/`Ctrl+,`).
+- **Save Flow UX**: Fixed project save dialog to gracefully handle cancellations without creating phantom untitled projects, and auto-populated existing project names.
+- **CSV Export Escaping**: Hardened `exportBookmarksAsCSV` with quote escaping for RFC 4180 compliance.
+- **Audio Error Handling**: Added error handling for audio play rejections in voice notes sidebar.
+- **Modern React 19 Compliance**: Replaced deprecated `onKeyPress` with `onKeyDown` and removed invalid `<style jsx>` block.
+- **Test Coverage**: Expanded unit tests for storage byte formatting edge cases (negative, NaN, GB) and modifier shortcut matching.
+
 ### Changed
 
 - Improved security hardening in Electron IPC path handling and file access flow.
