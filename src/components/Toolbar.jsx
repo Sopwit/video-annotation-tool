@@ -505,7 +505,10 @@ const Toolbar = ({
                             placeholder="Paste video URL..."
                             value={inputValue}
                             onChange={handleUrlChange}
-                            onKeyPress={(e) => e.key === 'Enter' && handleUrlSubmit()}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') handleUrlSubmit();
+                                if (e.key === 'Escape') handleCloseDialog();
+                            }}
                             autoFocus
                             className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:border-blue-500/50 focus:bg-white/10 transition-all mb-4"
                         />

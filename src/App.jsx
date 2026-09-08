@@ -168,121 +168,11 @@ function App() {
     }
   }, []);
 
-  const handleSaveProject = useCallback(async () => {
-    try {
-      const layerData = canvasOverlayRef.current?.exportLayerData?.() || {};
-      const projectData = {
-        id: currentProjectId || undefined,
-        name: prompt('Enter project name:', 'My Project') || 'Untitled',
-        videoUrl,
-        layers,
-        annotations: [],
-        layerData,
-        bookmarks,
-      };
-
-      const projectId = await saveProject(projectData);
-      setCurrentProjectId(projectId);
-      refreshRecentProjects();
-      addToast({
-        type: 'success',
-        message: 'Project saved successfully!',
-      });
-    } catch (error) {
-      console.error('Error saving project:', error);
-      addToast({
-        type: 'error',
-        message: 'Failed to save project',
-      });
+  const handleSeek = useCallback((time) => {
+    if (videoRef.current) {
+      videoRef.current.seekTo(time);
     }
-  }, [currentProjectId, videoUrl, layers, bookmarks, addToast, refreshRecentProjects]);
-
-  // Keyboard Shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
-
-      const shortcut = settings.shortcuts;
-      const key = e.key.toLowerCase();
-
-      // Keyboard shortcuts help
-      if (key === '?' && !e.ctrlKey && !e.metaKey) {
-        e.preventDefault();
-        setShowShortcutsHelp(true);
-        return;
-      }
-
-      // Esc to close modals
-      if (key === 'escape') {
-        setShowShortcutsHelp(false);
-        setShowSettings(false);
-        setZoomLevel(1); // Reset Zoom
-        setPanOffset({ x: 0, y: 0 });
-        return;
-      }
-
-      // Undo/Redo
-      if (isShortcutMatch(e, shortcut.undo || 'mod+z')) {
-        e.preventDefault();
-        handleUndo();
-        return;
-      }
-
-      if (isShortcutMatch(e, shortcut.redo || 'mod+shift+z') || isShortcutMatch(e, 'mod+y')) {
-        e.preventDefault();
-        handleRedo();
-        return;
-      }
-
-      if (isShortcutMatch(e, 'mod+s')) {
-        e.preventDefault();
-        handleSaveProject();
-        return;
-      }
-
-      // Tool shortcuts
-      const toolShortcuts = [
-        ['pen', shortcut.pen],
-        ['eraser', shortcut.eraser],
-        ['cursor', shortcut.cursor],
-        ['text', shortcut.text],
-        ['rectangle', shortcut.rectangle],
-        ['circle', shortcut.circle],
-        ['arrow', shortcut.arrow],
-        ['line', shortcut.line || 'l'],
-        ['stamp', shortcut.stamp],
-      ];
-
-      const matchedTool = toolShortcuts.find(([, sc]) => isShortcutMatch(e, sc));
-      if (matchedTool) {
-        setTool(matchedTool[0]);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [settings.shortcuts, setTool, handleUndo, handleRedo, handleSaveProject]);
-
-  // Auto-save functionality
-  useEffect(() => {
-    if (!settings.autoSave || !currentProjectId) {
-      cancelAutoSave();
-      return;
-    }
-
-    const projectData = {
-      id: currentProjectId,
-      name: 'Current Project',
-      videoUrl,
-      layers,
-      annotations: [],
-      layerData: canvasOverlayRef.current?.exportLayerData?.() || {},
-      bookmarks,
-    };
-
-    scheduleAutoSave(projectData, settings.autoSaveInterval);
-    return () => cancelAutoSave();
-  }, [settings.autoSave, settings.autoSaveInterval, currentProjectId, videoUrl, layers, bookmarks]);
+  }, []);
 
   const handleLoadVideo = useCallback((url) => {
     if (!url) return;
@@ -431,11 +321,204 @@ function App() {
     });
   }, [deleteBookmark, addToast]);
 
-  const handleSeek = useCallback((time) => {
-    if (videoRef.current) {
-      videoRef.current.seekTo(time);
+  const handleSaveProject = useCallback(async () => {
+    try {
+      const defaultName = recentProjects.find(p => p.id === currentProjectId)?.name || 'My Project';
+      const name = prompt('Enter project name:', defaultName);
+      if (name === null) return; // User cancelled prompt
+
+      const layerData = canvasOverlayRef.current?.exportLayerData?.() || {};
+      const projectData = {
+        id: currentProjectId || undefined,
+        name: name.trim() || 'Untitled Project',
+        videoUrl,
+        layers,
+        annotations: [],
+        layerData,
+        bookmarks,
+      };
+
+      const projectId = await saveProject(projectData);
+      setCurrentProjectId(projectId);
+      refreshRecentProjects();
+      addToast({
+        type: 'success',
+        message: 'Project saved successfully!',
+      });
+    } catch (error) {
+      console.error('Error saving project:', error);
+      addToast({
+        type: 'error',
+        message: 'Failed to save project',
+      });
     }
-  }, []);
+  }, [currentProjectId, videoUrl, layers, bookmarks, addToast, refreshRecentProjects, recentProjects]);
+
+  // Keyboard Shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
+
+      const shortcut = settings.shortcuts;
+      const key = e.key.toLowerCase();
+
+      // Keyboard shortcuts help
+      if (key === '?' && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        setShowShortcutsHelp((prev) => !prev);
+        return;
+      }
+
+      // Esc to close modals / reset zoom
+      if (key === 'escape') {
+        setShowShortcutsHelp(false);
+        setShowSettings(false);
+        setZoomLevel(1);
+        setPanOffset({ x: 0, y: 0 });
+        return;
+      }
+
+      // View & Panel shortcuts
+      if (isShortcutMatch(e, 'mod+b')) {
+        e.preventDefault();
+        toggleSidebar();
+        return;
+      }
+
+      if (isShortcutMatch(e, 'mod+l')) {
+        e.preventDefault();
+        setShowLayerManager((prev) => !prev);
+        return;
+      }
+
+      if (isShortcutMatch(e, 'mod+t')) {
+        e.preventDefault();
+        setShowTimeline((prev) => !prev);
+        return;
+      }
+
+      if (isShortcutMatch(e, 'mod+,')) {
+        e.preventDefault();
+        setShowSettings((prev) => !prev);
+        return;
+      }
+
+      // Undo/Redo
+      if (isShortcutMatch(e, shortcut.undo || 'mod+z')) {
+        e.preventDefault();
+        handleUndo();
+        return;
+      }
+
+      if (isShortcutMatch(e, shortcut.redo || 'mod+shift+z') || isShortcutMatch(e, 'mod+y')) {
+        e.preventDefault();
+        handleRedo();
+        return;
+      }
+
+      // Save / Export
+      if (isShortcutMatch(e, 'mod+s')) {
+        e.preventDefault();
+        handleSaveProject();
+        return;
+      }
+
+      if (isShortcutMatch(e, 'mod+e')) {
+        e.preventDefault();
+        handleDownload();
+        return;
+      }
+
+      // Playback shortcuts
+      if (key === ' ' || key === 'spacebar') {
+        e.preventDefault();
+        handlePlayPause();
+        return;
+      }
+
+      if (key === 'arrowleft') {
+        e.preventDefault();
+        const cur = videoRef.current ? videoRef.current.getCurrentTime() : 0;
+        const target = e.shiftKey ? Math.max(0, cur - 1) : Math.max(0, cur - 1 / 30);
+        handleSeek(target);
+        return;
+      }
+
+      if (key === 'arrowright') {
+        e.preventDefault();
+        const cur = videoRef.current ? videoRef.current.getCurrentTime() : 0;
+        const dur = videoRef.current?.videoElement?.duration || 10000;
+        const target = e.shiftKey ? Math.min(dur, cur + 1) : Math.min(dur, cur + 1 / 30);
+        handleSeek(target);
+        return;
+      }
+
+      if (key === 'home') {
+        e.preventDefault();
+        handleSeek(0);
+        return;
+      }
+
+      if (key === 'end') {
+        e.preventDefault();
+        const dur = videoRef.current?.videoElement?.duration || 0;
+        if (dur > 0) handleSeek(dur);
+        return;
+      }
+
+      // Tool shortcuts
+      const toolShortcuts = [
+        ['pen', shortcut.pen],
+        ['eraser', shortcut.eraser],
+        ['cursor', shortcut.cursor],
+        ['text', shortcut.text],
+        ['rectangle', shortcut.rectangle],
+        ['circle', shortcut.circle],
+        ['arrow', shortcut.arrow],
+        ['line', shortcut.line || 'l'],
+        ['stamp', shortcut.stamp],
+      ];
+
+      const matchedTool = toolShortcuts.find(([, sc]) => isShortcutMatch(e, sc));
+      if (matchedTool) {
+        setTool(matchedTool[0]);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [
+    settings.shortcuts,
+    setTool,
+    handleUndo,
+    handleRedo,
+    handleSaveProject,
+    handleDownload,
+    handlePlayPause,
+    handleSeek,
+    toggleSidebar,
+  ]);
+
+  // Auto-save functionality
+  useEffect(() => {
+    if (!settings.autoSave || !currentProjectId) {
+      cancelAutoSave();
+      return;
+    }
+
+    const projectData = {
+      id: currentProjectId,
+      name: 'Current Project',
+      videoUrl,
+      layers,
+      annotations: [],
+      layerData: canvasOverlayRef.current?.exportLayerData?.() || {},
+      bookmarks,
+    };
+
+    scheduleAutoSave(projectData, settings.autoSaveInterval);
+    return () => cancelAutoSave();
+  }, [settings.autoSave, settings.autoSaveInterval, currentProjectId, videoUrl, layers, bookmarks]);
 
   const handleOpenRecent = useCallback(async (project) => {
     if (!project?.id) return;

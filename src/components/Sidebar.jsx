@@ -33,7 +33,10 @@ const Sidebar = ({ isOpen, bookmarks, onJump, onDelete, onEdit, onClose }) => {
       } else {
         if (bookmark.audioUrl) {
             audioRef.current.src = bookmark.audioUrl;
-            audioRef.current.play();
+            audioRef.current.play().catch((err) => {
+              console.error("Audio playback error:", err);
+              setAudioPlayingId(null);
+            });
             setAudioPlayingId(bookmark.id);
             audioRef.current.onended = () => setAudioPlayingId(null);
         }
@@ -46,7 +49,7 @@ const Sidebar = ({ isOpen, bookmarks, onJump, onDelete, onEdit, onClose }) => {
 
     const startEditing = (bm) => {
         setEditingId(bm.id);
-        setEditValue(bm.text);
+        setEditValue(bm.text || bm.note || '');
     };
 
     const saveEdit = () => {
@@ -157,6 +160,15 @@ const Sidebar = ({ isOpen, bookmarks, onJump, onDelete, onEdit, onClose }) => {
                                         <textarea 
                                             value={editValue}
                                             onChange={(e) => setEditValue(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                                                    e.preventDefault();
+                                                    saveEdit();
+                                                }
+                                                if (e.key === 'Escape') {
+                                                    setEditingId(null);
+                                                }
+                                            }}
                                             className="w-full bg-black/50 border border-white/10 rounded p-2 text-sm text-white focus:outline-none focus:border-blue-500/50"
                                             rows={3}
                                             autoFocus

@@ -85,7 +85,13 @@ const LayerManager = () => {
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
                     onBlur={() => handleFinishEdit(layer.id)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleFinishEdit(layer.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleFinishEdit(layer.id);
+                      if (e.key === 'Escape') {
+                        setEditingId(null);
+                        setEditName('');
+                      }
+                    }}
                     className="flex-1 bg-white/10 text-white text-sm px-2 py-1 rounded outline-none focus:ring-1 focus:ring-blue-500"
                     autoFocus
                   />
@@ -204,26 +210,6 @@ const LayerManager = () => {
           Double-click layer name to rename
         </div>
       </div>
-      
-      <style jsx>{`
-        .slider::-webkit-slider-thumb {
-          appearance: none;
-          width: 12px;
-          height: 12px;
-          border-radius: 50%;
-          background: white;
-          cursor: pointer;
-        }
-        
-        .slider::-moz-range-thumb {
-          width: 12px;
-          height: 12px;
-          border-radius: 50%;
-          background: white;
-          cursor: pointer;
-          border: none;
-        }
-      `}</style>
     </div>
   );
 };
