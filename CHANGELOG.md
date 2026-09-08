@@ -7,39 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased]
+## [1.0.0] - 2026-09-08
 
-### Fixed & Optimized
+### 🚀 Official Production Release
 
-- **Canvas Coordinate Engine**: Fixed zoom/pan coordinate transformation scaling in `CanvasOverlay.jsx` for pixel-perfect drawing accuracy across all zoom levels up to 500%.
-- **Synchronous Drawing State**: Migrated transient drawing state and snapshots from asynchronous React state to refs (`snapshotRef`, `isDrawingRef`, `startPosRef`) eliminating shape tearing, smudge artifacts, and unnecessary re-renders during high-frequency mouse movements.
-- **Keyboard Shortcuts Engine**: Implemented full set of documented shortcuts in `App.jsx` (Space for Play/Pause, Frame stepping with Left/Right arrows, 1s seeking with Shift+Arrows, Home/End, `Ctrl+B`/`Ctrl+L`/`Ctrl+T`/`Ctrl+S`/`Ctrl+E`/`Ctrl+,`).
-- **Save Flow UX**: Fixed project save dialog to gracefully handle cancellations without creating phantom untitled projects, and auto-populated existing project names.
-- **CSV Export Escaping**: Hardened `exportBookmarksAsCSV` with quote escaping for RFC 4180 compliance.
-- **Audio Error Handling**: Added error handling for audio play rejections in voice notes sidebar.
-- **Modern React 19 Compliance**: Replaced deprecated `onKeyPress` with `onKeyDown` and removed invalid `<style jsx>` block.
-- **Test Coverage**: Expanded unit tests for storage byte formatting edge cases (negative, NaN, GB) and modifier shortcut matching.
+#### Added & Improved
+- **AI Object Detection**: Integrated on-device TensorFlow.js COCO-SSD object detection.
+- **Synchronous Canvas Engine**: Ref-driven vector canvas with smooth 60 FPS drawing and up to 500% zoom.
+- **Complete Shortcut Map**: Full keyboard shortcuts for tools, playback, seeking, frame stepping, and panels.
+- **Persistence & Export**: Dexie.js IndexedDB storage with auto-save; PNG, SVG, CSV, and JSON export.
+- **Audio Voice Memos**: Synchronized timestamped voice notes.
+- **Multi-Platform CI/CD**: Automated GitHub Actions release pipeline for macOS, Windows, and Linux.
+- **Modular Documentation**: Concise README with dedicated `docs/ARCHITECTURE.md` and `docs/SHORTCUTS.md`.
 
-### Changed
-
-- Improved security hardening in Electron IPC path handling and file access flow.
-- Added CI/repository automation updates (`workflow_dispatch`, concurrency, Dependabot grouping).
-- Added build icon generation helper script and supporting documentation.
-- Added shortcut utility tests and storage utility tests.
-- Updated roadmap/implementation docs and configuration defaults for v1.5.0 baseline.
-- Updated web metadata assets (`site.webmanifest`, `robots.txt`, manifest link).
-
-### Planned for v2.0
-
-- Advanced drawing tools (highlighter, blur, polygon)
-- Annotation templates and presets
-- Cloud sync capabilities
-- Real-time collaboration features
-- Video trimming tools
-- Command palette (Cmd+K)
-- Plugin system
-
-See [docs/ROADMAP.md](docs/ROADMAP.md) for detailed feature planning.
+#### Fixed & Optimized
+- Fixed canvas coordinate transformation during zoom and window scaling.
+- Hardened CSV bookmark export with quote escaping.
+- Upgraded event listeners to React 19 standards (`onKeyDown`).
+- Expanded unit tests for storage byte formatting and shortcut matching.
 
 ---
 

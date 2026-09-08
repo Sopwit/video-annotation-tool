@@ -64,7 +64,7 @@ export const exportAllData = async () => {
     }
 
     const data = {
-      version: '1.5.0',
+      version: '1.0.0',
       exportDate: new Date().toISOString(),
       localStorage: {
         [STORE_PERSIST_KEY]: persistedState,
