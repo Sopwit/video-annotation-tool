@@ -5,167 +5,93 @@
 ![Version](https://img.shields.io/badge/version-1.5.0-blue.svg?style=for-the-badge)
 ![License](https://img.shields.io/badge/license-MIT-green.svg?style=for-the-badge)
 ![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey.svg?style=for-the-badge)
-![Status](https://img.shields.io/badge/status-production--ready-success.svg?style=for-the-badge)
-![CI](https://github.com/Sopwit/video-annotation-tool/actions/workflows/ci.yml/badge.svg)
+![Build](https://img.shields.io/badge/build-passing-brightgreen.svg?style=for-the-badge)
 
-**A professional-grade, cross-platform video analysis suite powered by AI.**
-_Annotate, Analyze, and Export with precision._
+**A modern, cross-platform video analysis and annotation suite powered by on-device AI.**
 
-[🌐 English](README.md) | [🇹🇷 Türkçe](README.tr.md)
+[🌐 English](README.md) | [🇹🇷 Türkçe](README.tr.md) | [📖 Full Documentation](docs/)
 
 </div>
 
 ---
 
-## 📖 Overview
+## 🌟 Highlights
 
-**Video Annotation Tool** is a state-of-the-art desktop application built on **Electron** and **React**, designed for sports coaches, researchers, and content creators. It bridges the gap between simple video players and complex editing software by providing a lightweight, "Liquid Glass" interface focused entirely on analysis.
-
-With **on-device AI** for object detection and a **vector-based drawing engine**, you can analyze footage frame-by-frame without your data ever leaving your machine.
-
-## ✨ Key Features
-
-### 🧠 **Smart Analysis & AI**
-
-- **AI Object Detection**: Instantly highlight people and objects using integrated TensorFlow.js models.
-- **Voice Memos**: Record audio commentary directly synchronized with the timeline.
-- **Infinite Canvas**: Deep zoom (500%) and pan capabilities for pixel-perfect detail.
-
-### 🎥 **Video Control**
-
-- **Universal Format Support**: plays MP4, WebM, OGG, MOV, AVI, MKV.
-- **Frame-Perfect Navigation**: Step through video frame-by-frame for precise marking.
-- **Visual Scrubber**: See your annotations and bookmarks visualised on the timeline.
-
-### ✏️ **Professional Creative Suite**
-
-- **Vector Tools**: Pen, Line, Rectangle, Circle, Arrow with adjustable strokes and opacity.
-- **Smart Stamps**: Quick feedback with built-in emoji stamps (✅ ❌ ❓ ❗).
-- **Non-Destructive Editing**: Every stroke is a layer. Move, resize, or delete at any time.
-
-### 💾 **Data & Export**
-
-- **100% Local**: Projects are saved to IndexedDB. No cloud uploads.
-- **Export Power**: Save frames as **PNG**, annotations as **SVG**, or data as **CSV/JSON**.
+- **🧠 On-Device AI**: Detect objects and people locally in video frames using TensorFlow.js.
+- **✏️ Vector Drawing Suite**: Pen, Rectangle, Circle, Arrow, Line, Text, and Smart Emoji Stamps.
+- **🔍 Infinite Canvas**: Zoom up to 500% with smooth pan and pixel-perfect coordinate mapping.
+- **🎙️ Timeline Voice Memos**: Record synchronized audio commentary directly on timestamps.
+- **🎥 Universal Playback**: Native support for MP4, WebM, OGG, MOV, AVI, MKV, and YouTube streams.
+- **📐 Multi-Layer System**: Layer ordering, visibility toggling, and independent opacity control.
+- **💾 100% Local & Private**: Instant IndexedDB persistence with PNG, SVG, CSV, and JSON exports.
 
 ---
 
-## 🛠️ Technology Stack
-
-Built with modern, performance-focused technologies:
-
-| Core                                                                          | UI / UX                                                             | Intelligence                                                                          | Storage                                                                     |
-| :---------------------------------------------------------------------------- | :------------------------------------------------------------------ | :------------------------------------------------------------------------------------ | :-------------------------------------------------------------------------- |
-| ![Electron](https://img.shields.io/badge/Electron-darkblue?style=flat-square) | ![React](https://img.shields.io/badge/React-blue?style=flat-square) | ![TensorFlow.js](https://img.shields.io/badge/TensorFlow.js-orange?style=flat-square) | ![Dexie.js](https://img.shields.io/badge/Dexie.js-yellow?style=flat-square) |
-| **Node.js**                                                                   | **Tailwind CSS**                                                    | **Coco SSD**                                                                          | **IndexedDB**                                                               |
-
----
-
-## 🚀 Getting Started
+## 🚀 Quick Start
 
 ### Prerequisites
+- **Node.js**: `v20+`
+- **npm**: `v10+`
 
-- **Node.js** (v20 or higher)
-- **npm** (v10 or higher recommended)
-
-### Installation
+### Installation & Run
 
 ```bash
-# Clone the repository
+# Clone and install dependencies
 git clone https://github.com/Sopwit/video-annotation-tool.git
-
-# Navigate to the project directory
 cd video-annotation-tool
-
-# Install dependencies
 npm install
-```
 
-### Development
-
-Run the app in development mode with hot-reload:
-
-```bash
+# Start development with hot-reload
 npm run electron:dev
 ```
 
-### Quality Checks
-
-Run repository quality gates before opening a PR:
+### Quality Checks & Build
 
 ```bash
-npm run clean
+# Run tests, lint, and production bundle
+npm test
 npm run lint
-npm run test
 npm run build
-```
 
-### Production Build
-
-Create a standalone executable for your OS:
-
-```bash
-# Build for current OS
-npm run electron:build
-
-# Build for all platforms
-npm run electron:build:all
+# Package desktop application
+npm run electron:build        # Current OS
+npm run electron:build:all    # macOS, Windows & Linux
 ```
 
 ---
 
-## 📂 Project Structure
+## ⌨️ Essential Shortcuts
 
-```bash
-video-annotation-tool/
-├── 🔌 backend/       # Electron main process & IPC handlers
-├── ⚛️ src/           # React frontend application
-│   ├── components/  # Reusable UI components
-│   ├── services/    # Business logic (AI, Audio, Export)
-│   ├── store/       # State management (Zustand)
-│   └── themes/      # Theme styles
-├── ⚙️ config/        # Environment & App configuration
-└── 📦 release/       # Compiled production builds
-```
+| Action | Shortcut | Action | Shortcut |
+| :--- | :--- | :--- | :--- |
+| **Play / Pause** | `Space` | **Undo / Redo** | `Ctrl+Z` / `Ctrl+Shift+Z` |
+| **Frame Step** | `Left` / `Right` | **Save Project** | `Ctrl+S` |
+| **Seek 1s** | `Shift + Left/Right` | **Export PNG** | `Ctrl+E` |
+| **Zoom / Pan** | `Ctrl+Wheel` / `Shift+Drag` | **Notes / Layers** | `Ctrl+B` / `Ctrl+L` |
+| **Drawing Tools** | `P` / `E` / `C` / `T` / `S` | **Reset View** | `Esc` |
+
+👉 **[View Full Keyboard Shortcuts Reference](docs/SHORTCUTS.md)**
 
 ---
 
-## ⌨️ Keyboard Shortcuts
+## 📚 Documentation Index
 
-| Category | Shortcut | Description |
-| :--- | :--- | :--- |
-| **Tools** | `P` / `E` / `C` / `T` / `S` | Pen, Eraser, Cursor, Text, Stamp |
-| **Shapes** | `R` / `O` / `A` / `L` | Rectangle, Circle, Arrow, Line |
-| **Playback** | `Space` | Play / Pause |
-| **Navigation** | `Left` / `Right` | Frame Step Back / Forward (1/30s) |
-| **Seek** | `Shift + Left` / `Shift + Right` | Seek -1s / +1s |
-| **Timeline** | `Home` / `End` | Jump to Start / End |
-| **Pan & Zoom** | `Ctrl + Scroll` / `Shift + Drag` | Canvas Zoom (up to 500%) / Pan View |
-| **Edit** | `Ctrl/Cmd + Z` / `Ctrl/Cmd + Shift + Z` | Undo / Redo |
-| **Project** | `Ctrl/Cmd + S` / `Ctrl/Cmd + E` | Save Project / Export PNG Snapshot |
-| **Panels** | `Ctrl/Cmd + B` / `Ctrl/Cmd + L` / `Ctrl/Cmd + T` | Toggle Bookmarks / Layers / Timeline |
-| **Settings & Help** | `Ctrl/Cmd + ,` / `?` / `Esc` | Settings / Shortcut Help / Reset View |
+| Guide | Description |
+| :--- | :--- |
+| [🏛️ Architecture Guide](docs/ARCHITECTURE.md) | Technical stack, components, and subsystem design |
+| [⌨️ Shortcuts Reference](docs/SHORTCUTS.md) | Complete list of keybindings and controls |
+| [🚀 Implementation Guide](docs/IMPLEMENTATION_GUIDE.md) | Deep dive into features, APIs, and state flows |
+| [🗺️ Project Roadmap](docs/ROADMAP.md) | Milestone planning and upcoming capabilities |
+| [📜 Changelog](CHANGELOG.md) | Release history and unreleased enhancements |
 
 ---
-
-## 🤝 Contributing
-
-We love contributions! Please read our [Contributing Guide](CONTRIBUTING.md) to get started.
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
 
 ## 📝 License
 
-Distributed under the MIT License. See `LICENSE.md` for more information.
-
----
+Distributed under the MIT License. See [LICENSE.md](LICENSE.md) for details.
 
 <div align="center">
 
-**Made with ❤️ by [Sopwit](https://github.com/Sopwit)**
+**Crafted with precision by [Sopwit](https://github.com/Sopwit)**
 
 </div>
