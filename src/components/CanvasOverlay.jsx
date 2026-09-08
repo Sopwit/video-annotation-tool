@@ -4,9 +4,9 @@ const CanvasOverlay = forwardRef(
   ({ width, height, tool, color, brushSize, clearTrigger, isYouTube, activeStamp, videoUrl, currentLayer, layers }, ref) => {
     const MAX_HISTORY_STEPS = 30;
     const canvasRefs = useRef({});
-    const [isDrawing, setIsDrawing] = useState(false);
-    const [startPos, setStartPos] = useState({ x: 0, y: 0 });
-    const [snapshot, setSnapshot] = useState(null);
+    const isDrawingRef = useRef(false);
+    const startPosRef = useRef({ x: 0, y: 0 });
+    const snapshotRef = useRef(null);
     const [history, setHistory] = useState([]);
     const [historyStep, setHistoryStep] = useState(-1);
     const [textInput, setTextInput] = useState({ show: false, x: 0, y: 0, value: '' });
@@ -126,8 +126,6 @@ const CanvasOverlay = forwardRef(
       });
     }, []);
 
-
-
     // Initialize canvases for all layers
     useEffect(() => {
       layers.forEach((layer) => {
@@ -206,9 +204,11 @@ const CanvasOverlay = forwardRef(
       const canvas = getCurrentCanvas();
       if (!canvas) return { x: 0, y: 0 };
       const rect = canvas.getBoundingClientRect();
+      const scaleX = rect.width > 0 ? canvas.width / rect.width : 1;
+      const scaleY = rect.height > 0 ? canvas.height / rect.height : 1;
       return {
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
+        x: (e.clientX - rect.left) * scaleX,
+        y: (e.clientY - rect.top) * scaleY,
       };
     };
 
@@ -238,9 +238,9 @@ const CanvasOverlay = forwardRef(
         return;
       }
 
-      setStartPos(pos);
-      setIsDrawing(true);
-      setSnapshot(ctx.getImageData(0, 0, canvas.width, canvas.height));
+      startPosRef.current = pos;
+      isDrawingRef.current = true;
+      snapshotRef.current = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
       if (tool === 'pen' || tool === 'eraser') {
         ctx.beginPath();
@@ -249,11 +249,12 @@ const CanvasOverlay = forwardRef(
     };
 
     const draw = (e) => {
-      if (!isDrawing) return;
+      if (!isDrawingRef.current) return;
       const canvas = getCurrentCanvas();
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
       const currentPos = getPos(e);
+      const startPos = startPosRef.current;
 
       ctx.strokeStyle = color;
       ctx.lineWidth = brushSize;
@@ -269,8 +270,8 @@ const CanvasOverlay = forwardRef(
         ctx.stroke();
       } else {
         // Shape tools
-        if (snapshot) {
-          ctx.putImageData(snapshot, 0, 0);
+        if (snapshotRef.current) {
+          ctx.putImageData(snapshotRef.current, 0, 0);
         }
 
         ctx.globalCompositeOperation = 'source-over';
@@ -305,7 +306,7 @@ const CanvasOverlay = forwardRef(
           );
           ctx.stroke();
         } else if (tool === 'line') {
-          // NEW: Line tool
+          // Line tool
           ctx.moveTo(startPos.x, startPos.y);
           ctx.lineTo(currentPos.x, currentPos.y);
           ctx.stroke();
@@ -314,8 +315,9 @@ const CanvasOverlay = forwardRef(
     };
 
     const stopDrawing = () => {
-      if (isDrawing) {
-        setIsDrawing(false);
+      if (isDrawingRef.current) {
+        isDrawingRef.current = false;
+        snapshotRef.current = null;
         saveState();
       }
     };
