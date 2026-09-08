@@ -94,8 +94,17 @@
         "nsis",
         "portable"
       ],
-      "icon": "build/icon.ico",
-      "artifactName": "${productName}-${version}-win-${arch}.${ext}"
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "artifactName": "${productName}-Setup-${version}.${ext}"
+    },
+    "portable": {
+      "artifactName": "${productName}-Portable-${version}.${ext}"
     },
     "linux": {
       "target": [
@@ -107,12 +116,6 @@
       "category": "Video",
       "maintainer": "Sopwit <sopwith.osdev@gmail.com>",
       "artifactName": "${productName}-${version}-linux-${arch}.${ext}"
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
     }
   }
 }

@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Release Tag (e.g. v1.5.0)'
+        description: 'Release Tag (e.g. v1.0.0)'
         required: true
-        default: 'v1.5.0'
+        default: 'v1.0.0'
 
 concurrency:
   group: release-${{ github.ref }}
@@ -19,7 +19,7 @@ permissions:
   contents: write
 
 jobs:
-  build-and-release:
+  build-and-package:
     strategy:
       fail-fast: false
       matrix:
@@ -35,7 +35,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install Dependencies
@@ -47,8 +47,57 @@ jobs:
           npm run test
           npm run build
 
-      - name: Build and Package Electron App
+      - name: Build Electron Packages
+        run: |
+          npx electron-builder --publish never
+
+      - name: Upload Platform Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-binaries-${{ matrix.os }}
+          path: |
+            release/*.AppImage
+            release/*.deb
+            release/*.rpm
+            release/*.dmg
+            release/*.zip
+            release/*.exe
+          if-no-files-found: error
+          retention-days: 2
+
+  publish-release:
+    needs: build-and-package
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Download Platform Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: release-binaries-*
+          path: release-dist
+          merge-multiple: true
+
+      - name: Inspect Release Artifacts
+        run: |
+          ls -la release-dist
+
+      - name: Publish to GitHub Releases
+        uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          npx electron-builder --publish always
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          files: |
+            release-dist/*.AppImage
+            release-dist/*.deb
+            release-dist/*.rpm
+            release-dist/*.dmg
+            release-dist/*.zip
+            release-dist/*.exe
+          generate_release_notes: true
