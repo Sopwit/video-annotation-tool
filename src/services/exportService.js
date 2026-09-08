@@ -70,7 +70,8 @@ export const exportBookmarksAsCSV = (bookmarks, filename = 'bookmarks') => {
     const headers = ['Timestamp', 'Time (seconds)', 'Note'];
     const rows = bookmarks.map(bm => {
       const timestamp = formatTime(bm.time);
-      return [timestamp, bm.time, `"${bm.text || bm.note || ''}"`];
+      const noteContent = (bm.text || bm.note || '').replace(/"/g, '""');
+      return [timestamp, bm.time, `"${noteContent}"`];
     });
     
     const csvContent = [
