@@ -5,7 +5,10 @@
   "version": "1.0.0",
   "description": "A powerful cross-platform video annotation tool for macOS, Windows, and Linux",
   "license": "MIT",
-  "author": "Sopwit",
+  "author": {
+    "name": "Sopwit",
+    "email": "sopwith.osdev@gmail.com"
+  },
   "main": "backend/main.cjs",
   "homepage": "https://github.com/Sopwit/video-annotation-tool",
   "repository": {
@@ -102,6 +105,7 @@
       ],
       "icon": "build/icon.png",
       "category": "Video",
+      "maintainer": "Sopwit <sopwith.osdev@gmail.com>",
       "artifactName": "${productName}-${version}-linux-${arch}.${ext}"
     },
     "nsis": {
