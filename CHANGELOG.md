@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.4] - 2026-09-11
+
+### Fixed
+
+- Package Windows x64 and ARM64 payloads in one universal NSIS installer and
+  install-test that same artifact on both native Windows architectures.
+
 ## [1.0.3] - 2026-09-11
 
 ### Fixed

@@ -7,8 +7,8 @@ release workflow does not cross-compile application packages.
 | --- | --- | --- | --- |
 | Linux | x86-64 | `ubuntu-24.04` | AppImage, DEB, RPM |
 | Linux | ARM64 | `ubuntu-24.04-arm` | AppImage, DEB, RPM |
-| Windows | x86-64 | `windows-2025` | NSIS installer |
-| Windows | ARM64 | `windows-11-arm` | NSIS installer |
+| Windows | x86-64 | `windows-2025` | Universal NSIS installer |
+| Windows | ARM64 | `windows-11-arm` | Universal NSIS installer |
 | macOS | x86-64 | `macos-15-intel` | DMG, ZIP |
 | macOS | Apple Silicon | `macos-15` | DMG, ZIP |
 
@@ -25,7 +25,10 @@ The publish job runs only after all six jobs pass and attaches
 4. Verify downloaded files with `SHA256SUMS.txt` before installation.
 
 Windows installers always create Start Menu and Desktop shortcuts. The native
-application icon is embedded in the executable and used by both shortcuts.
+application icon is embedded in the executable and used by both shortcuts. The
+single universal installer contains both x64 and ARM64 payloads and selects the
+native payload during installation; it is installed and launched on both native
+Windows runner architectures before publication.
 
 Code-signing and macOS notarization credentials must only be supplied through
 GitHub Actions secrets. Unsigned local builds are intended for development and
