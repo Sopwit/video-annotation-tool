@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.3] - 2026-09-11
+
+### Fixed
+
+- Resolve the Windows installation path from the native Desktop shortcut so
+  Windows ARM64 installations are verified without assuming an x64 path.
+
 ## [1.0.2] - 2026-09-11
 
 ### Fixed

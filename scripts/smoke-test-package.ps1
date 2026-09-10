@@ -18,10 +18,16 @@ if ($install.ExitCode -ne 0) {
   throw "NSIS installation failed with exit code $($install.ExitCode)."
 }
 
-$executable = Join-Path $installDirectory "Video Annotation Tool.exe"
-$uninstaller = Join-Path $installDirectory "Uninstall Video Annotation Tool.exe"
-if (-not (Test-Path $executable)) { throw "Installed executable is missing." }
 if (-not (Test-Path $desktopShortcut)) { throw "Desktop shortcut is missing." }
+
+$shell = New-Object -ComObject WScript.Shell
+$shortcut = $shell.CreateShortcut($desktopShortcut)
+$executable = $shortcut.TargetPath
+if (-not $executable -or -not (Test-Path $executable)) {
+  throw "Desktop shortcut does not target an installed executable."
+}
+$actualInstallDirectory = Split-Path -Parent $executable
+$uninstaller = Join-Path $actualInstallDirectory "Uninstall Video Annotation Tool.exe"
 
 $application = Start-Process -FilePath $executable -PassThru
 Start-Sleep -Seconds 10
