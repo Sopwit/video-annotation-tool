@@ -51,8 +51,8 @@ case "$PLATFORM" in
     test -f squashfs-root/resources/app.asar
     rm -rf squashfs-root
 
-    sudo dpkg --install "$deb_path"
-    trap 'sudo dpkg --remove video-annotation-tool >/dev/null 2>&1 || true' EXIT
+    sudo apt-get install -y "./$deb_path"
+    trap 'sudo apt-get remove -y video-annotation-tool >/dev/null 2>&1 || true' EXIT
     test -x /usr/bin/video-annotation-tool
     test -f /usr/share/applications/com.sopwit.videoannotationtool.desktop
     set +e

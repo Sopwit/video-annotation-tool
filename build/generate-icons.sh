@@ -1,11 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if ! command -v convert >/dev/null 2>&1; then
-  echo "Error: ImageMagick 'convert' command is required." >&2
-  exit 1
-fi
-
 SOURCE_IMAGE="${1:-public/icon.svg}"
 BUILD_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$BUILD_DIR/.." && pwd)"
@@ -38,6 +33,11 @@ generate_macos_icon() {
 if [[ "$SOURCE_IMAGE" == "--macos" ]]; then
   generate_macos_icon
   exit 0
+fi
+
+if ! command -v convert >/dev/null 2>&1; then
+  echo "Error: ImageMagick 'convert' command is required." >&2
+  exit 1
 fi
 
 if [[ ! -f "$PROJECT_ROOT/$SOURCE_IMAGE" ]]; then

@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.2] - 2026-09-11
+
+### Fixed
+
+- Made macOS ICNS generation independent from ImageMagick.
+- Made Linux DEB smoke installation resolve native package dependencies.
+
 ## [1.0.1] - 2026-09-11
 
 ### Fixed
