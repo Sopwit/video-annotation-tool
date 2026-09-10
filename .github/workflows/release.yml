@@ -84,6 +84,11 @@ jobs:
 
       - name: Build universal Windows installer
         if: runner.os == 'Windows'
+        env:
+          # electron-builder 26.x's default BCJ2 filter can make NSIS silently
+          # omit PE files on Windows ARM64. BCJ is compatible with the bundled
+          # NSIS runtime decoder and preserves the complete native payload.
+          ELECTRON_BUILDER_7Z_FILTER: BCJ
         run: npm run electron:package -- --win --x64 --arm64
 
       - name: Smoke test packaged Linux application

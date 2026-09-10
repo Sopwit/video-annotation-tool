@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.5] - 2026-09-11
+
+### Fixed
+
+- Use the NSIS-compatible BCJ compression filter so Windows ARM64 installs
+  retain the application executable and all native PE files.
+
 ## [1.0.4] - 2026-09-11
 
 ### Fixed
