@@ -12,6 +12,12 @@ const MAX_READ_FILE_SIZE_BYTES = 1024 * 1024 * 1024; // 1GB
 const isDev = process.env.NODE_ENV === "development" || !app.isPackaged;
 const shouldOpenDevTools = process.env.OPEN_DEVTOOLS === "true";
 
+const appRoot = app.getAppPath();
+const rendererEntry = path.join(appRoot, "dist", "index.html");
+const windowIcon = app.isPackaged
+  ? path.join(process.resourcesPath, "icon.png")
+  : path.join(appRoot, "public", "icon.png");
+
 const normalizePath = (filePath) => path.resolve(String(filePath || ""));
 
 function createWindow() {
@@ -24,12 +30,12 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, 'preload.cjs'),
+      preload: path.join(__dirname, "preload.cjs"),
       webSecurity: true,
     },
     titleBarStyle: "hiddenInset",
     trafficLightPosition: { x: 15, y: 15 },
-    icon: path.join(__dirname, "../public/icon.png"),
+    icon: windowIcon,
   });
 
   // Load the app
@@ -39,7 +45,7 @@ function createWindow() {
       mainWindow.webContents.openDevTools({ mode: "detach" });
     }
   } else {
-    mainWindow.loadFile(path.join(__dirname, "../dist/index.html"));
+    mainWindow.loadFile(rendererEntry);
   }
 
   mainWindow.webContents.setWindowOpenHandler(() => ({ action: "deny" }));

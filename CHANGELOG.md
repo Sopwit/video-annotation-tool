@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.1] - 2026-09-11
+
+### Fixed
+
+- Rebuilt the release pipeline as six native OS/architecture jobs for Linux,
+  Windows, and macOS on x86-64 and ARM64.
+- Corrected packaged renderer, preload, and application-icon path resolution.
+- Added native package installation and startup smoke tests.
+- Added Windows Desktop and Start Menu shortcuts with the application icon.
+- Added Linux desktop integration and macOS ICNS generation.
+- Added release checksums and upgraded the secure Electron packaging toolchain.
+
 ## [1.0.0] - 2026-09-08
 
 ### 🚀 Official Production Release

@@ -76,6 +76,8 @@ npm run electron:build:all    # macOS, Windows & Linux
 
 ## 📚 Documentation Index
 
+- [Native deployment and release matrix](docs/DEPLOYMENT.md)
+
 | Guide | Description |
 | :--- | :--- |
 | [🏛️ Architecture Guide](docs/ARCHITECTURE.md) | Technical stack, components, and subsystem design |
