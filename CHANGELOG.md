@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.6] - 2026-09-11
+
+### Fixed
+
+- Build renderer assets with relative URLs so the packaged Electron application
+  loads its complete React UI through the `file://` protocol.
+- Make native package smoke tests fail when the application opens a blank window
+  instead of rendering visible UI content.
+
 ## [1.0.5] - 2026-09-11
 
 ### Fixed

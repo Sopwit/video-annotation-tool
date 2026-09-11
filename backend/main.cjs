@@ -11,6 +11,8 @@ const MAX_READ_FILE_SIZE_BYTES = 1024 * 1024 * 1024; // 1GB
 // Development mode check
 const isDev = process.env.NODE_ENV === "development" || !app.isPackaged;
 const shouldOpenDevTools = process.env.OPEN_DEVTOOLS === "true";
+const shouldRunUiSmokeTest = process.env.ELECTRON_UI_SMOKE_TEST === "true";
+const uiSmokeResultPath = process.env.ELECTRON_UI_SMOKE_RESULT;
 
 const appRoot = app.getAppPath();
 const rendererEntry = path.join(appRoot, "dist", "index.html");
@@ -19,6 +21,59 @@ const windowIcon = app.isPackaged
   : path.join(appRoot, "public", "icon.png");
 
 const normalizePath = (filePath) => path.resolve(String(filePath || ""));
+
+function installRendererDiagnostics(window) {
+  window.webContents.on("did-fail-load", (_event, errorCode, errorDescription, validatedURL) => {
+    console.error("Renderer failed to load:", { errorCode, errorDescription, validatedURL });
+  });
+
+  window.webContents.on("render-process-gone", (_event, details) => {
+    console.error("Renderer process exited:", details);
+  });
+
+  if (!shouldRunUiSmokeTest) return;
+
+  window.webContents.on("did-finish-load", async () => {
+    const deadline = Date.now() + 15_000;
+
+    while (Date.now() < deadline) {
+      try {
+        const state = await window.webContents.executeJavaScript(`(() => {
+          const root = document.getElementById('root');
+          const firstElement = root?.firstElementChild;
+          const bounds = firstElement?.getBoundingClientRect();
+          return {
+            childCount: root?.childElementCount ?? 0,
+            textLength: document.body.innerText.trim().length,
+            width: bounds?.width ?? 0,
+            height: bounds?.height ?? 0,
+          };
+        })()`);
+
+        if (
+          state.childCount > 0 &&
+          state.textLength > 20 &&
+          state.width > 100 &&
+          state.height > 100
+        ) {
+          console.log("UI_SMOKE_TEST_PASS", state);
+          if (uiSmokeResultPath) {
+            fs.writeFileSync(uiSmokeResultPath, JSON.stringify(state));
+          }
+          app.exit(0);
+          return;
+        }
+      } catch (error) {
+        console.error("UI smoke probe failed:", error);
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+
+    console.error("UI_SMOKE_TEST_FAIL: renderer did not produce visible application content");
+    app.exit(1);
+  });
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -37,6 +92,8 @@ function createWindow() {
     trafficLightPosition: { x: 15, y: 15 },
     icon: windowIcon,
   });
+
+  installRendererDiagnostics(mainWindow);
 
   // Load the app
   if (isDev) {

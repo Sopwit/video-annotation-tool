@@ -6,24 +6,21 @@ ARCHITECTURE="${2:?architecture is required}"
 
 run_with_startup_check() {
   local executable="$1"
+  local result_file="/tmp/video-annotation-tool-ui-smoke.json"
   shift
 
-  "$executable" "$@" >/tmp/video-annotation-tool-smoke.log 2>&1 &
-  local application_pid=$!
-  sleep 10
-
-  if ! kill -0 "$application_pid" 2>/dev/null; then
-    set +e
-    wait "$application_pid"
-    local exit_code=$?
-    set -e
-    cat /tmp/video-annotation-tool-smoke.log
-    echo "Application exited during startup (exit code: $exit_code)." >&2
+  rm -f "$result_file"
+  set +e
+  ELECTRON_UI_SMOKE_TEST=true ELECTRON_UI_SMOKE_RESULT="$result_file" "$executable" "$@" \
+    >/tmp/video-annotation-tool-smoke.log 2>&1
+  local exit_code=$?
+  set -e
+  cat /tmp/video-annotation-tool-smoke.log
+  if [[ $exit_code -ne 0 ]] || [[ ! -s "$result_file" ]]; then
+    echo "Packaged UI failed to render (exit code: $exit_code)." >&2
     exit 1
   fi
-
-  kill "$application_pid"
-  wait "$application_pid" 2>/dev/null || true
+  cat "$result_file"
 }
 
 case "$PLATFORM" in
@@ -55,16 +52,7 @@ case "$PLATFORM" in
     trap 'sudo apt-get remove -y video-annotation-tool >/dev/null 2>&1 || true' EXIT
     test -x /usr/bin/video-annotation-tool
     test -f /usr/share/applications/com.sopwit.videoannotationtool.desktop
-    set +e
-    xvfb-run --auto-servernum timeout 15s /usr/bin/video-annotation-tool \
-      >/tmp/video-annotation-tool-smoke.log 2>&1
-    exit_code=$?
-    set -e
-    if [[ $exit_code -ne 124 ]]; then
-      cat /tmp/video-annotation-tool-smoke.log
-      echo "Installed application exited during startup (exit code: $exit_code)." >&2
-      exit 1
-    fi
+    run_with_startup_check xvfb-run --auto-servernum /usr/bin/video-annotation-tool
     ;;
   mac)
     dmg_path="$(find release -maxdepth 1 -type f -name "*mac-${ARCHITECTURE}.dmg" -print -quit)"

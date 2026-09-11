@@ -7,6 +7,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Electron loads the production UI through file://. Absolute `/assets/...`
+  // URLs resolve against the filesystem root and leave a blank window.
+  base: './',
   plugins: [
     react(),
   ],
